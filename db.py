@@ -44,8 +44,12 @@ class LibraryDatabase:
         pass
     def batchSearchIsbn(self, ISBN_list, fmt='excel'):  # 批量根据标准号精确搜索
         pass
+# ————————————自定义方法————————————
+def clean_name(filename, replace_char='_'):
 
-
+    illegal_chars = '<>:"/\\|?*'
+    trans_table = str.maketrans(illegal_chars, replace_char * len(illegal_chars))
+    return filename.translate(trans_table)
 # ————————————类外实现————————————
 
 def openDb(self):
@@ -144,13 +148,14 @@ def searchTitle(self, keywords, fmt='excel'):
         print(f"搜索完成！找到 {len(df)} 条记录")
         first_keyword = kws[0] if kws else "search"
         safe_keyword = first_keyword[:20] if len(first_keyword) > 20 else first_keyword
+        final_key = clean_name(safe_keyword)
         keyword_count = len(kws)
         if fmt.lower() == 'csv':
-            output_file = f"查询结果_{safe_keyword}_{keyword_count}个关键词.csv"
+            output_file = f"查询结果_{final_key}_{keyword_count}个关键词.csv"
             df.to_csv(output_file, index=False, encoding='utf-8-sig')
             print(f"结果已保存到: {output_file}")
         else:
-            output_file = f"查询结果_{safe_keyword}_{keyword_count}个关键词.xlsx"
+            output_file = f"查询结果_{final_key}_{keyword_count}个关键词.xlsx"
             df.to_excel(output_file, index=False)
             print(f"结果已保存到: {output_file}")
         return df
@@ -181,12 +186,13 @@ def searchCnPart(self, part, fmt='excel'):
         df = pd.read_sql_query(sql, conn, params=params)
         print(f"搜索完成！找到 {len(df)} 条记录")
         safe_call_number = part[:20] if len(part) > 20 else part
+        final_cn = clean_name(safe_call_number)
         if fmt.lower() == 'csv':
-            output_file = f"{safe_call_number}.csv"
+            output_file = f"{final_cn}.csv"
             df.to_csv(output_file, index=False, encoding='utf-8-sig')
             print(f"结果已保存到: {output_file}")
         else:
-            output_file = f"{safe_call_number}.xlsx"
+            output_file = f"{final_cn}.xlsx"
             df.to_excel(output_file, index=False)
             print(f"结果已保存到: {output_file}")
         return df
@@ -222,7 +228,7 @@ def batchSearchCnPart(self, file_path, fmt='excel'):
 
 
 def searchCallNum(self, call_number, fmt='excel'):
-    """根据完整的索书号精确搜索书籍，并导出结果（驼峰名实现）"""
+    """根据完整的索书号精确搜索书籍，并导出结果"""
     if not call_number.strip():
         print("非法输入")
         return None
@@ -236,12 +242,13 @@ def searchCallNum(self, call_number, fmt='excel'):
         df = pd.read_sql_query(sql, conn, params=params)
         print(f"搜索完成！找到 {len(df)} 条记录")
         safeCallNum = call_number[:20] if len(call_number) > 20 else call_number
+        safeCallNum = clean_name(safeCallNum)
         if fmt.lower() == 'csv':
-            output_file = f"{safeCallNum}.csv"
+            output_file = f"结果{safeCallNum}.csv"
             df.to_csv(output_file, index=False, encoding='utf-8-sig')
             print(f"结果已保存到: {output_file}")
         else:
-            output_file = f"{safeCallNum}.xlsx"
+            output_file = f"结果{safeCallNum}.xlsx"
             df.to_excel(output_file, index=False)
             print(f"结果已保存到: {output_file}")
         return df
