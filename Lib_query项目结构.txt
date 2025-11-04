@@ -1,0 +1,19 @@
+Lib_query
+├── lib_query
+│   ├── __init__.py
+│   ├── gui.py
+│   ├── adapters.py
+│   ├── types.py
+│   └── db
+│       ├── __init__.py
+│       ├── core.py            # 数据库连接、事务、公共工具
+│       ├── importer.py        # importExcel 等导入/建表逻辑
+│       └── search	           #单独存放的搜索函数包
+│           ├── __init__.py
+│           ├── title.py       # searchTitle
+│           ├── call_num_piece.py     #  searchCnPart
+│           ├── call_num.py        # searchCallNum
+│           └── isbn.py       # searchIsbn
+├── pyproject.toml
+├── requirements.txt
+└── README.md
