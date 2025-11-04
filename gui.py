@@ -7,7 +7,6 @@ from tkinter import ttk, messagebox, filedialog
 from db import LibraryDatabase
 from utils import find_excel
 
-
 class LibraryApp:
     def __init__(self, root):
         self.root = root
@@ -270,7 +269,7 @@ class LibraryApp:
             messagebox.showwarning("⚠️ 输入错误", "请输入索书号的一部分。")
             return
         try:
-            results = self.db.search_cn_part(
+            results = self.db.searchCnPart(
                 marking, self.cn_part_format_var.get())
             if results is not None and len(results) > 0:
                 messagebox.showinfo("✅ 搜索完成", f"找到 {len(results)} 条记录，结果已保存。")
@@ -320,10 +319,10 @@ class LibraryApp:
                 return
             try:
                 if query_type == "标准号(批量)":
-                    results = self.db.batch_search_isbn(
+                    results = self.db.batchSearchIsbn(
                         inputs, self.precise_format_var.get())
                 elif query_type == "完整索书号(批量)":
-                    results = self.db.batch_search_callnum(
+                    results = self.db.batchSearchCallNum(
                         inputs, self.precise_format_var.get())
             except Exception as e:
                 messagebox.showerror("❌ 搜索出错", f"批量搜索出错: {str(e)}")
@@ -332,10 +331,10 @@ class LibraryApp:
             # 单个模式
             try:
                 if query_type == "标准号":
-                    results = self.db.search_isbn(
+                    results = self.db.searchIsbn(
                         input_text, self.precise_format_var.get())
                 elif query_type == "完整索书号":
-                    results = self.db.search_callnum(
+                    results = self.db.searchCallNum(
                         input_text, self.precise_format_var.get())
             except Exception as e:
                 messagebox.showerror("❌ 搜索出错", f"搜索出错: {str(e)}")
@@ -373,7 +372,7 @@ class LibraryApp:
 
         try:
             # 调用数据库的批量搜索方法
-            results = self.db.batch_search_cn_part(
+            results = self.db.batchSearchCnPart(
                 self.cn_batch_file_path, self.cn_batch_format_var.get()
             )
             if results is not None: # 修改判断条件，只要函数执行完毕（即使无结果）也算完成
