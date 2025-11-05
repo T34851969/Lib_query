@@ -20,11 +20,11 @@ class LibraryDatabase:
         if self.conn:
             self.conn.close()
             
-    def existsDb(self):
+    def is_exists(self):
         # 检查数据库是否存在
         return Path(self.db_path).exists()
     
-    def totalRecords(self):
+    def all_records(self):
         # 获取总记录数
         with LibraryDatabase(path = "图书馆详细馆藏.db") as conn:
             cursor = conn.execute("SELECT COUNT(*) FROM books")
