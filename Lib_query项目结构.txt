@@ -15,6 +15,7 @@ Lib_query                           # 项目根目录
 │       ├── importer.py                     # Excel导入/建表逻辑
 │       └── search                          # 搜索函数子包
 │           ├── __init__.py                     # 搜索子包初始化
+│           ├── pull_request.py                 # 统一查询函数
 │           ├── title.py                        # 题名检索 searchTitle
 │           ├── call_num_piece.py               # 索书号分段检索 searchCnPart
 │           ├── call_num.py                     # 索书号检索 searchCallNum

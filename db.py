@@ -16,7 +16,7 @@ class LibraryDatabase:
         self.conn = None
 
     # 类内声明
-    # ————————————数据库接口函数————————————
+    # ————————————数据库核心函数————————————
     def openDb(self):  # 打开数据库连接
         pass
     def closeDb(self):  # 关闭数据库连接
@@ -25,6 +25,7 @@ class LibraryDatabase:
         pass
     def existsDb(self):  # 检查数据库是否存在
         pass
+    # ————————————辅助函数————————————
     def totalRecords(self):  # 获取总记录数
         pass
     def importExcel(self, excel_file):  # 从Excel文件创建数据库表
