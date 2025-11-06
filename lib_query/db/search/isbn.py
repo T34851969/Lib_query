@@ -23,9 +23,9 @@ def search(ISBN: str, fmt: str = 'excel') -> Optional[pd.DataFrame]:
         return None
     print(f"搜索标准号: {ISBN}")
 
-    with LibraryDatabase(db_path="图书馆详细馆藏.db") as conn:
+    with LibraryDatabase() as conn:
         isbn = escape(ISBN.strip())
-        sql = 'SELECT * FROM books WHERE 标准号 = ?'
+        sql = 'SELECT * FROM books WHERE 标准号=?'
         params = [isbn]
 
         print("正在执行搜索...")
@@ -44,7 +44,7 @@ def search(ISBN: str, fmt: str = 'excel') -> Optional[pd.DataFrame]:
             print(f"结果已保存到: {output_file}")
         else:
             output_file = output_dir / f"{final_name}.xlsx"
-            df.to_excel(output_file, index=False, engine='calamine')
+            df.to_excel(output_file, index=False, engine='xlsxwriter')
             print(f"结果已保存到: {output_file}")
 
         return df.head()

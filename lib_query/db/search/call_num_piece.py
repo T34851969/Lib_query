@@ -22,7 +22,7 @@ def search(part: str, fmt='excel', db_path="图书馆详细馆藏.db") -> Option
         return None
     print(f"搜索: {part}")
 
-    with LibraryDatabase(db_path=db_path) as conn:
+    with LibraryDatabase() as conn:
         # 动态构建列名
         idx = len(part)
         if idx > 5:
@@ -33,7 +33,7 @@ def search(part: str, fmt='excel', db_path="图书馆详细馆藏.db") -> Option
 
         # 构建特殊搜索请求
         if column_name == 'level_5' and len(part) == 5:
-            sql = f"SELECT * FROM books WHERE level_5 LIKE ? ESCAPE '\\'"
+            sql = f"SELECT * FROM books WHERE level_5 LIKE ?"
             params = [f"{part}%"]
         else:
             sql = f'SELECT * FROM books WHERE "level_{idx}" = ?'
@@ -56,7 +56,7 @@ def search(part: str, fmt='excel', db_path="图书馆详细馆藏.db") -> Option
             print(f"结果已保存到: {output_file}")
         else:
             output_file = output_dir / f"{final_cn}.xlsx"
-            df.to_excel(output_file, index=False, engine='calamine')
+            df.to_excel(output_file, index=False, engine='xlsxwriter')
             print(f"结果已保存到: {output_file}")
         return df.head()
 

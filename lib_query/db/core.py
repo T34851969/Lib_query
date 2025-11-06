@@ -16,7 +16,7 @@ class LibraryDatabase:
         self.conn.execute("PRAGMA temp_store = MEMORY")  # 使用内存临时存储
         return self.conn
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         # 关闭数据库连接
         if self.conn:
             self.conn.close()

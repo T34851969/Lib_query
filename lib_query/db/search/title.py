@@ -27,9 +27,9 @@ def search_title(keyword: str, fmt: str = 'excel') -> Optional[pd.DataFrame]:
     print(f"搜索关键词: {raw_keyword}")
 
     sql = "SELECT * FROM books WHERE 题名 LIKE ? ESCAPE '\\'"
-    params = f"%{escaped_keyword}%"
+    params = (f"%{escaped_keyword}%",)
 
-    with LibraryDatabase(db_path='图书馆详细馆藏.db') as conn:
+    with LibraryDatabase() as conn:
         print("正在搜索...")
         df = pd.read_sql_query(sql, conn, params=params)
         print(f"搜索完成！找到 {len(df)} 条记录")
@@ -50,7 +50,7 @@ def search_title(keyword: str, fmt: str = 'excel') -> Optional[pd.DataFrame]:
         else:
             output_file = output_dir / f"查询：{safe_keyword}——{count}个结果.xlsx"
             try:
-                df.to_excel(output_file, index=False, engine='calamine')
+                df.to_excel(output_file, index=False, engine='xlsxwriter')
                 print(f"结果已保存到: {output_file}")
             except Exception as e:
                 print(f"保存Excel文件时出错: {e}")

@@ -24,9 +24,9 @@ def search(call_number, fmt='excel') -> Optional[pd.DataFrame]:
 
     print(f"精确搜索索书号: {call_number}")
 
-    with LibraryDatabase(db_path="图书馆详细馆藏.db") as conn:
-        sql = 'SELECT * FROM books WHERE 索书号=? ESCAPE "\\"'
-        params = escape(call_number)
+    with LibraryDatabase() as conn:
+        sql = 'SELECT * FROM books WHERE 索书号=?'
+        params = [escape(call_number)]
 
         print("正在执行搜索...")
         df = pd.read_sql_query(sql, conn, params=params)
@@ -45,7 +45,7 @@ def search(call_number, fmt='excel') -> Optional[pd.DataFrame]:
             print(f"结果已保存到: {output_file}")
         else:
             output_file = output_dir / f"{safe_Num}.xlsx"
-            df.to_excel(output_file, index=False, engine='calamine')
+            df.to_excel(output_file, index=False, engine='xlsxwriter')
             print(f"结果已保存到: {output_file}")
         return df.head()
 

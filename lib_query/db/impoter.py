@@ -19,7 +19,7 @@ def import_excel(excel_file):
             level_num = i - 3
             df = df.rename(columns={df.columns[i]: f"level_{level_num}"})
 
-        with LibraryDatabase(path="图书馆详细馆藏.db") as conn:
+        with LibraryDatabase() as conn:
             # 写入数据库
             df.to_sql('books', conn, if_exists='replace', index=False)
 
