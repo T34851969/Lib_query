@@ -5,13 +5,17 @@ from core import LibraryDatabase
 from pathlib import Path
 from typing import Optional
 
+
 def clean_name(filename: str, replace_char: str = '-') -> str:
     illegal_chars = '<>:"/\\|?*'
-    trans_table = str.maketrans(illegal_chars, replace_char * len(illegal_chars))
+    trans_table = str.maketrans(
+        illegal_chars, replace_char * len(illegal_chars))
     return filename.translate(trans_table)
+
 
 def escape(word: str) -> str:
     return word.replace('%', '[%]').replace('_', '[_]')
+
 
 def search_title(keyword: str, fmt: str = 'excel') -> Optional[pd.DataFrame]:
     if not keyword:
