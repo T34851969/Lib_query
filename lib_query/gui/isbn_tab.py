@@ -82,9 +82,9 @@ def create(app, parent):
     # 添加说明
     info_label = ttk.Label(parent, text="💡 1：单次搜索 - 输入ISBN进行匹配",
                            foreground='gray')
-    info_label.grid(column=0, row=9, columnspan=4,
+    info_label.grid(column=0, row=8, columnspan=4,
                     padx=10, pady=2, sticky=tk.W)
     info_label2 = ttk.Label(parent, text="💡 2：批量搜索 - 导入.txt/.csv文件或在上方粘贴，每行一个",
                             foreground='gray')
-    info_label2.grid(column=0, row=10, columnspan=4,
+    info_label2.grid(column=0, row=9, columnspan=4,
                      padx=10, pady=2, sticky=tk.W)
