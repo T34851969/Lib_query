@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 
 TAB_NAME: str = "call_num_piece_tab"
+TAB_TITLE: str = "索书号切片搜索"
 """创建标签页：索书号切片搜索"""
 
 
@@ -17,7 +18,7 @@ def create(app, parent):
         column=0, row=1, padx=10, pady=5, sticky=tk.W)
     app.cn_part_entry = ttk.Entry(parent, width=40, font=('Arial', 10))
     app.cn_part_entry.grid(column=1, row=1, padx=5,
-                            pady=5, sticky=tk.EW, columnspan=2)
+                           pady=5, sticky=tk.EW, columnspan=2)
     single_search_btn = ttk.Button(parent, text="🔍 开始搜索",
                                    command=app.on_cn_part_search)
     single_search_btn.grid(column=3, row=1, padx=5, pady=5)
@@ -26,12 +27,11 @@ def create(app, parent):
     ttk.Label(parent, text="单次输出格式:").grid(
         column=0, row=2, padx=10, pady=5, sticky=tk.W)
     app.cn_part_format_var = tk.StringVar(value="excel")
-    excel_rb = ttk.Radiobutton(
-        parent, text=".xlsx", variable=app.cn_part_format_var, value="excel")
-    csv_rb = ttk.Radiobutton(
-        parent, text=".csv", variable=app.cn_part_format_var, value="csv")
-    excel_rb.grid(column=1, row=2, padx=5, pady=5, sticky=tk.W)
-    csv_rb.grid(column=2, row=2, padx=5, pady=5, sticky=tk.W)
+    # 紧凑排列单选按钮
+    format_frame = ttk.Frame(parent)
+    format_frame.grid(column=1, row=2, padx=5, pady=5, sticky=tk.W)
+    ttk.Radiobutton(format_frame, text=".xlsx", variable=app.cn_part_format_var, value="excel").pack(side=tk.LEFT, padx=4)
+    ttk.Radiobutton(format_frame, text=".csv", variable=app.cn_part_format_var, value="csv").pack(side=tk.LEFT, padx=4)
 
     # 分隔线
     separator = ttk.Separator(parent, orient='horizontal')
@@ -53,8 +53,10 @@ def create(app, parent):
     load_batch_btn.grid(column=3, row=5, padx=5, pady=5)
 
     # 多行输入框（支持直接粘贴/编辑多条索书号切片）
-    app.cn_batch_text = ScrolledText(parent, height=6, wrap=tk.WORD, font=('Arial', 10))
-    app.cn_batch_text.grid(column=1, row=6, columnspan=3, padx=10, pady=(0, 10), sticky=tk.EW)
+    app.cn_batch_text = ScrolledText(
+        parent, height=6, wrap=tk.WORD, font=('Arial', 10))
+    app.cn_batch_text.grid(column=1, row=6, columnspan=3,
+                           padx=10, pady=(0, 10), sticky=tk.EW)
     ttk.Label(parent, text="在此粘贴每行一个切片：").grid(
         column=0, row=6, padx=10, pady=(0, 10), sticky=tk.NW)
 
@@ -62,12 +64,10 @@ def create(app, parent):
     ttk.Label(parent, text="批量输出格式:").grid(
         column=0, row=7, padx=10, pady=5, sticky=tk.W)
     app.cn_batch_format_var = tk.StringVar(value="excel")
-    batch_excel_rb = ttk.Radiobutton(
-        parent, text=".xlsx", variable=app.cn_batch_format_var, value="excel")
-    batch_csv_rb = ttk.Radiobutton(
-        parent, text=".csv", variable=app.cn_batch_format_var, value="csv")
-    batch_excel_rb.grid(column=1, row=7, padx=5, pady=5, sticky=tk.W)
-    batch_csv_rb.grid(column=2, row=7, padx=5, pady=5, sticky=tk.W)
+    batch_format_frame = ttk.Frame(parent)
+    batch_format_frame.grid(column=1, row=7, padx=5, pady=5, sticky=tk.W)
+    ttk.Radiobutton(batch_format_frame, text=".xlsx", variable=app.cn_batch_format_var, value="excel").pack(side=tk.LEFT, padx=4)
+    ttk.Radiobutton(batch_format_frame, text=".csv", variable=app.cn_batch_format_var, value="csv").pack(side=tk.LEFT, padx=4)
 
     # 批量搜索按钮
     app.cn_batch_search_btn = ttk.Button(

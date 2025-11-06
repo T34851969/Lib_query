@@ -2,7 +2,7 @@ from tkinter import ttk
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 
-TAB_NAME: str = "call_num_tab"
+TAB_NAME: str = "isbn_tab"
 """创建标签页：ISBN搜索"""
 
 
@@ -17,7 +17,7 @@ def create(app, parent):
         column=0, row=1, padx=10, pady=5, sticky=tk.W)
     app.cn_part_entry = ttk.Entry(parent, width=40, font=('Arial', 10))
     app.cn_part_entry.grid(column=1, row=1, padx=5,
-                            pady=5, sticky=tk.EW, columnspan=2)
+                           pady=5, sticky=tk.EW, columnspan=2)
     single_search_btn = ttk.Button(parent, text="🔍 开始搜索",
                                    command=app.on_cn_part_search)
     single_search_btn.grid(column=3, row=1, padx=5, pady=5)
@@ -53,8 +53,10 @@ def create(app, parent):
     load_batch_btn.grid(column=3, row=5, padx=5, pady=5)
 
     # 多行输入框（支持直接粘贴/编辑多条ISBN）
-    app.cn_batch_text = ScrolledText(parent, height=6, wrap=tk.WORD, font=('Arial', 10))
-    app.cn_batch_text.grid(column=1, row=6, columnspan=3, padx=10, pady=(0, 10), sticky=tk.EW)
+    app.cn_batch_text = ScrolledText(
+        parent, height=6, wrap=tk.WORD, font=('Arial', 10))
+    app.cn_batch_text.grid(column=1, row=6, columnspan=3,
+                           padx=10, pady=(0, 10), sticky=tk.EW)
     ttk.Label(parent, text="在此粘贴：").grid(
         column=0, row=6, padx=10, pady=(0, 10), sticky=tk.NW)
 

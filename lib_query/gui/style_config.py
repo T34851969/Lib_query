@@ -6,10 +6,11 @@ from tkinter import ttk
 DEFAULT_THEME = 'clam'
 FONT_FAMILY = 'Arial'
 FONT_SIZES = {
-    'title': 16,
-    'header': 12,
+    'title': 20,
+    'header': 15,
     'normal': 10,
 }
+
 
 def apply(root: tk.Tk, theme: str = None):
 
@@ -28,7 +29,8 @@ def apply(root: tk.Tk, theme: str = None):
                     foreground="#093E55")
 
     # 按钮 / 单选 / 输入样式
-    style.configure('TButton', font=(FONT_FAMILY, FONT_SIZES['normal']), padding=6)
+    style.configure('TButton', font=(
+        FONT_FAMILY, FONT_SIZES['normal']), padding=6)
     style.configure('Accent.TButton', font=(FONT_FAMILY, FONT_SIZES['normal']), padding=6,
                     foreground='#ffffff', background='#0a84ff')
     style.configure('TRadiobutton', font=(FONT_FAMILY, FONT_SIZES['normal']))
