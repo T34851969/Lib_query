@@ -27,6 +27,6 @@ class LibraryDatabase:
 
     def all_records(self):
         # 获取总记录数
-        with LibraryDatabase(path="图书馆详细馆藏.db") as conn:
+        with LibraryDatabase(db_path=self.db_path) as conn:
             cursor = conn.execute("SELECT COUNT(*) FROM books")
             return cursor.fetchone()[0]

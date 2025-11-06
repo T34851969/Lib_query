@@ -1,7 +1,7 @@
 """根据完整的索书号精确搜索书籍，并导出结果"""
 
 import pandas as pd
-from core import LibraryDatabase
+from ..core import LibraryDatabase
 from pathlib import Path
 from typing import Optional
 

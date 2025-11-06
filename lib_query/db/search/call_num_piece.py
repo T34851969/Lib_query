@@ -1,6 +1,6 @@
 """根据索书号的一部分筛选书籍，并导出结果"""
 import pandas as pd
-from core import LibraryDatabase
+from ..core import LibraryDatabase
 from pathlib import Path
 from typing import Optional
 
@@ -16,13 +16,13 @@ def escape(word: str) -> str:
     return word.replace('%', '[%]').replace('_', '[_]')
 
 
-def search(part: str, fmt='excel') -> Optional[pd.DataFrame]:
+def search(part: str, fmt='excel', db_path="图书馆详细馆藏.db") -> Optional[pd.DataFrame]:
     if not part.strip():
         print("非法输入")
         return None
     print(f"搜索: {part}")
 
-    with LibraryDatabase(db_path="图书馆详细馆藏.db") as conn:
+    with LibraryDatabase(db_path=db_path) as conn:
         # 动态构建列名
         idx = len(part)
         if idx > 5:
@@ -61,7 +61,7 @@ def search(part: str, fmt='excel') -> Optional[pd.DataFrame]:
         return df.head()
 
 
-def batch_search(file_path, fmt='excel'):
+def batch_search(file_path, fmt='excel', db_path="图书馆详细馆藏.db"):
     # 根据 TXT 文件中的索书号部分进行批量筛选，并导出结果
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -78,7 +78,7 @@ def batch_search(file_path, fmt='excel'):
 
     found_any = False
     for part in parts:
-        df_result = search(part, fmt)
+        df_result = search(part, fmt, db_path)
         if df_result is not None and not df_result.empty:
             found_any = True
 

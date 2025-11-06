@@ -5,9 +5,9 @@ Lib_query                           # 项目根目录
 │   ├── ctrler.py                           # 控制器
 │   ├── gui                                 # 图形界面相关模块
 │   │   ├── __init__.py                         # GUI子包初始化
-│   │   ├── main_tab.py                         # 主界面Tab逻辑
+│   │   ├── core_tab.py                         # 主界面Tab逻辑
 │   │   ├── title_tab.py                        # 题名检索Tab
-│   │   ├── call_num_piece_tab.py               # 索书号分段检索Tab
+│   │   ├── call_num_piece_tab.py               # 索书号切片检索Tab
 │   │   ├── call_num_tab.py                     # 索书号检索Tab
 │   │   └── isbn_tab.py                         # ISBN检索Tab
 │   └── db                            # 数据库相关模块

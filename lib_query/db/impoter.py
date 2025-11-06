@@ -1,7 +1,7 @@
 """从Excel文件创建数据库表"""
 
 import pandas as pd
-from core import LibraryDatabase
+from .core import LibraryDatabase
 
 
 def import_excel(excel_file):

@@ -3,7 +3,7 @@
 import pandas as pd
 from pathlib import Path
 from typing import Optional
-from core import LibraryDatabase
+from ..core import LibraryDatabase
 
 
 def clean_name(filename: str, replace_char: str = '-') -> str:

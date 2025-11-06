@@ -1,7 +1,7 @@
 """根据标题搜索书籍，单次搜索"""
 
 import pandas as pd
-from core import LibraryDatabase
+from ..core import LibraryDatabase
 from pathlib import Path
 from typing import Optional
 
