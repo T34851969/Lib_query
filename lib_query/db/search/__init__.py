@@ -1,16 +1,10 @@
-# 初始化文件
+# 初始化文件 — 将子模块导出为包属性，便于外部以search.call_num_piece.search()形式调用
 
-from .call_num_piece import search as search_call_num_piece, batch_search as batch_search_call_num_piece
-from .call_num import search as search_call_num, batch_search as batch_search_call_num
-from .isbn import search as search_isbn, batch_search as batch_search_isbn
-from .title import search_title
+from . import call_num_piece, call_num, isbn, title
 
 __all__ = [
-	'search_call_num_piece',
-	'batch_search_call_num_piece',
-	'search_call_num',
-	'batch_search_call_num',
-	'search_isbn',
-	'batch_search_isbn',
-	'search_title',
+    'call_num_piece',
+    'call_num',
+    'isbn',
+    'title',
 ]
