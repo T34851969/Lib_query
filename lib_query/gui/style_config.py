@@ -11,7 +11,7 @@ FONT_SIZES = {
     'normal': 10,
 }
 
-def apply_styles(root: tk.Tk, theme: str = None):
+def apply(root: tk.Tk, theme: str = None):
 
     style = ttk.Style(root)
     theme = theme or DEFAULT_THEME
