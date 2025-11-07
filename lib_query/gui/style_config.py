@@ -19,7 +19,6 @@ def apply(root: tk.Tk, theme: str = None):
     try:
         style.theme_use(theme)
     except Exception:
-        # 主题不可用时回退为默认
         style.theme_use(DEFAULT_THEME)
 
     # 标签样式
@@ -32,6 +31,6 @@ def apply(root: tk.Tk, theme: str = None):
     style.configure('TButton', font=(
         FONT_FAMILY, FONT_SIZES['normal']), padding=6)
     style.configure('Accent.TButton', font=(FONT_FAMILY, FONT_SIZES['normal']), padding=6,
-                    foreground='#ffffff', background='#0a84ff')
+                    foreground='#ffffff', background="#23BCDE")
     style.configure('TRadiobutton', font=(FONT_FAMILY, FONT_SIZES['normal']))
     style.configure('TEntry', padding=5)
