@@ -1,4 +1,4 @@
-"""lib_query.gui 包的公共接口。
+"""lib_query.gui 包公共接口
 
 导出：
 - LibraryApp: 主应用类（位于 core_tab.py）
@@ -28,7 +28,7 @@ def create_app(root: tk.Tk, *, load_tabs: bool = True, theme: Optional[str] = No
     """
     if theme is not None:
         apply_style(root, theme=theme)
-    # LibraryApp __init__ 也会调用 style_config.apply；这里允许外部覆盖主题
+    # 这里允许外部覆盖主题
     app = LibraryApp(root)
     if load_tabs:
         app.load_tab_modules()

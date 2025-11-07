@@ -1,4 +1,4 @@
-import os
+"""主程序"""
 import tkinter as tk
 from lib_query.gui import create_app
 

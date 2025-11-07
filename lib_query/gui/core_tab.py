@@ -23,8 +23,7 @@ class LibraryApp:
                                     relief=tk.SUNKEN, anchor=tk.W, font=('Arial', 9))
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-        # 全局只读终端（始终显示在所有标签页下方）
-        # 增大高度并使用更清晰的等宽字体以便阅读日志
+        # 全局只读终端
         self.output_box = ScrolledText(
             root, height=22, wrap=tk.WORD, font=('Consolas', 9))
         self.output_box.pack(side=tk.BOTTOM, fill=tk.X,
@@ -146,55 +145,3 @@ class LibraryApp:
         self.output_box.configure(state='normal')
         self.output_box.delete('1.0', tk.END)
         self.output_box.configure(state='disabled')
-
-    def load_cn_batch_file(self):
-        """允许用户选择批量文件，更新状态并启用批量按钮"""
-
-        path = filedialog.askopenfilename(
-            filetypes=[("文本文件", "*.txt"), ("CSV 文件", "*.csv"), ("所有文件", "*")]
-        )
-        if path:
-            try:
-                self.cn_batch_file_path_var.set(path)
-            except Exception:
-                pass
-            try:
-                self.append_output(f"已选择批量文件: {path}")
-            except Exception:
-                pass
-            try:
-                self.cn_batch_search_btn.configure(state='normal')
-            except Exception:
-                pass
-
-    def on_cn_part_search(self):
-        """单次索书号切片搜索占位实现"""
-        self.append_output("on_cn_part_search: 未实现（占位）")
-
-    def on_cn_batch_search(self):
-        """批量切片搜索占位实现"""
-        # 优先读取多行输入，否则尝试从已选文件读取
-        try:
-            text = ''
-            if hasattr(self, 'cn_batch_text'):
-                text = self.cn_batch_text.get('1.0', 'end').strip()
-            if text:
-                lines = [l.strip() for l in text.splitlines() if l.strip()]
-                self.append_output(f"准备批量搜索 {len(lines)} 行（占位）")
-            else:
-                fp = getattr(self, 'cn_batch_file_path_var', None)
-                if fp is not None and fp.get() and fp.get() != "未选择文件":
-                    self.append_output(f"准备从文件批量搜索: {fp.get()} （占位）")
-                else:
-                    self.append_output("未提供输入")
-        except Exception as e:
-            self.append_output(f"出错: {e}")
-
-    def on_title_search(self):
-        self.append_output("on_title_search: 未实现（占位）")
-
-    def load_batch_input(self):
-        self.append_output("load_batch_input: 未实现（占位）")
-
-    def on_precise_batch_search(self):
-        self.append_output("on_precise_batch_search: 未实现（占位）")

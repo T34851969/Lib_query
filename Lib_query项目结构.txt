@@ -1,8 +1,9 @@
+说明：该项目采用全面向对象范式
+
 Lib_query                           # 项目根目录
 ├── lib_query                           # 主包，包含核心代码
 │   ├── __init__.py                         # 包初始化文件
-│   ├── main.py                             # 主程序
-│   ├── ctrler.py                           # 控制器
+│   ├── ctrl.py                             # 控制器
 │   ├── gui                                 # 图形界面相关模块
 │   │   ├── __init__.py                         # GUI子包初始化
 │   │   ├── style_config.py                    # 统一应用个性化设置
@@ -16,11 +17,13 @@ Lib_query                           # 项目根目录
 │       ├── core.py                         # 数据库连接、事务、公共工具
 │       ├── importer.py                     # Excel导入/建表逻辑
 │       └── search                          # 搜索函数子包
-│           ├── __init__.py                     # 搜索子包初始化
+│           ├── __init__.py                     # 子包初始化
+│           ├── base_search.py                  # 包抽象入口
 │           ├── title.py                        # 题名检索 searchTitle
 │           ├── call_num_piece.py               # 索书号分段检索 searchCnPart
 │           ├── call_num.py                     # 索书号检索 searchCallNum
 │           └── isbn.py                         # ISBN检索 searchIsbn
+├── main.py                         # 主程序
 ├── output                              # 输出结果文件夹
 │   ├── title_result                    # 题名检索结果
 │   ├── call_num_piece_result           # 索书号分段检索结果
