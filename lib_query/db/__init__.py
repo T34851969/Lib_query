@@ -8,4 +8,6 @@ __all__ = [
     "LibraryDatabase",
     "import_excel",
     "search",
+    "all_records",
+    "return_path"
 ]

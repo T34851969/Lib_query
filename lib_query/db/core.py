@@ -30,3 +30,6 @@ class LibraryDatabase:
         with LibraryDatabase(db_path=self.db_path) as conn:
             cursor = conn.execute("SELECT COUNT(*) FROM books")
             return cursor.fetchone()[0]
+        
+    def return_path(self):
+        return self.db_path

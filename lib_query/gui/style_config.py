@@ -3,34 +3,34 @@
 import tkinter as tk
 from tkinter import ttk
 
-DEFAULT_THEME = 'clam'
-FONT_FAMILY = 'Arial'
-FONT_SIZES = {
-    'title': 20,
-    'header': 15,
-    'normal': 10,
-}
+class StyleConfig:
+    DEFAULT_THEME = 'clam'
+    FONT_FAMILY = 'Arial'
+    FONT_SIZES = {
+        'title': 20,
+        'header': 15,
+        'normal': 10,
+    }
 
+    @classmethod
+    def apply(cls, root: tk.Tk, theme: str = None):
+        style = ttk.Style(root)
+        theme = theme or cls.DEFAULT_THEME
+        try:
+            style.theme_use(theme)
+        except Exception:
+            style.theme_use(cls.DEFAULT_THEME)
 
-def apply(root: tk.Tk, theme: str = None):
+        # 标签样式
+        style.configure('Title.TLabel', font=(cls.FONT_FAMILY, cls.FONT_SIZES['title'], 'bold'),
+                        foreground="#093E55")
+        style.configure('Header.TLabel', font=(cls.FONT_FAMILY, cls.FONT_SIZES['header'], 'bold'),
+                        foreground="#093E55")
 
-    style = ttk.Style(root)
-    theme = theme or DEFAULT_THEME
-    try:
-        style.theme_use(theme)
-    except Exception:
-        style.theme_use(DEFAULT_THEME)
-
-    # 标签样式
-    style.configure('Title.TLabel', font=(FONT_FAMILY, FONT_SIZES['title'], 'bold'),
-                    foreground="#093E55")
-    style.configure('Header.TLabel', font=(FONT_FAMILY, FONT_SIZES['header'], 'bold'),
-                    foreground="#093E55")
-
-    # 按钮 / 单选 / 输入样式
-    style.configure('TButton', font=(
-        FONT_FAMILY, FONT_SIZES['normal']), padding=6)
-    style.configure('Accent.TButton', font=(FONT_FAMILY, FONT_SIZES['normal']), padding=6,
-                    foreground='#ffffff', background="#23BCDE")
-    style.configure('TRadiobutton', font=(FONT_FAMILY, FONT_SIZES['normal']))
-    style.configure('TEntry', padding=5)
+        # 按钮 / 单选 / 输入样式
+        style.configure('TButton', font=(
+            cls.FONT_FAMILY, cls.FONT_SIZES['normal']), padding=6)
+        style.configure('Accent.TButton', font=(cls.FONT_FAMILY, cls.FONT_SIZES['normal']), padding=6,
+                        foreground='#ffffff', background="#23BCDE")
+        style.configure('TRadiobutton', font=(cls.FONT_FAMILY, cls.FONT_SIZES['normal']))
+        style.configure('TEntry', padding=5)
