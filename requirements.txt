@@ -1,2 +1,6 @@
 pandas
 tkinter
+xlsxwriter
+python-calamine
+# xlsxwriter: 用于 Excel 文件写入，安装方式：pip install xlsxwriter
+# python-calamine: 用于 Excel 文件读取，安装方式：pip install python-calamine

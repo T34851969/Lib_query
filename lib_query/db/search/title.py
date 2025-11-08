@@ -65,8 +65,8 @@ class TitleSearch(SearchBase):
             return {"df": None, "messages": msg, "output_file": None}
 
         if not found_any:
-            msg.append("所有搜索均未找到匹配项")
+            msg.append("所有搜索均未找到匹配项\n")
             return {"df": None, "messages": msg, "output_file": None}
         else:
-            msg.append("批量搜索完成！")
+            msg.append("批量搜索完成！\n")
             return result

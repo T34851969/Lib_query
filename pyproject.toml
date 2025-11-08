@@ -1,12 +1,16 @@
 [project]
 name = "Lib_query"
-description = "面向对象的图书检索与管理工具，支持多种检索方式，基于Tkinter和pandas。"
+description = "图书检索工具，支持多种检索方式，基于Tkinter和pandas。"
 version = "0.1.0"
-authors = ["Your Name <your@email.com>"]
+authors = ["T34851969 <MrImmanual@outlook.com>"]
 
 [tool.poetry.dependencies]
 pandas = "*"
 tkinter = "*"
+# xlsxwriter: 用于 Excel 文件写入
+xlsxwriter = "*"
+# python-calamine: 用于 Excel 文件读写
+python-calamine = "*"
 
 [build-system]
 requires = ["setuptools", "wheel"]

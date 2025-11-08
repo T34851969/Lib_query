@@ -62,7 +62,7 @@ class SearchBase(ABC):
             try:
                 df.to_csv(output_file, index=False,
                           encoding='utf-8-sig')
-                msg.append(f"结果已保存到: {output_file}")
+                msg.append(f"结果已保存到: {output_file}\n")
             except Exception as e:
                 msg.append(f"保存CSV文件时出错: {e}")
         else:
@@ -70,9 +70,9 @@ class SearchBase(ABC):
             try:
                 df.to_excel(output_file, index=False,
                             engine='xlsxwriter')
-                msg.append(f"结果已保存到: {output_file}")
+                msg.append(f"结果已保存到: {output_file}\n")
             except Exception as e:
-                msg.append(f"保存Excel文件时出错: {e}")
+                msg.append(f"保存Excel文件时出错: {e}\n")
 
         # 返回结果
         return {"df": df.head().to_string(index=False) if not df.empty else None,
