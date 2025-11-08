@@ -85,7 +85,11 @@ class CallNumPieceTab:
         piece = self.cn_part_entry.get()
         fmt = self.fmt_var.get()
         result = self.app.ctrl.on_call_num_piece_single(piece, fmt)
-        self.app.append_output('\n'.join(result.get('messages', [])))
+        messages = '\n'.join(result.get('messages', []))
+        df_content = result.get('df', '')
+        output_file = result.get('output_file', '')
+        full_output = f"{messages}\n{df_content}\n输出文件: {output_file}"
+        self.app.append_output(full_output)
 
     def on_load_cn_batch_file(self):
         self.file_path = self.app.load_file()
@@ -102,7 +106,10 @@ class CallNumPieceTab:
             self.app.append_output("请先输入索书号切片或选择文件。")
             return
         result = self.app.ctrl.on_call_num_piece_batch(key, fmt)
-        self.app.append_output('\n'.join(result.get('messages', [])))
+        messages = '\n'.join(result.get('messages', []))
+        output_file = result.get('output_file', '')
+        full_output = f"{messages}\n输出文件: {output_file}"
+        self.app.append_output(full_output)
 
 def create(app, parent):
     """标签页创建入口，供 LibraryApp.load_tab_modules 调用"""

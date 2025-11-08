@@ -86,7 +86,12 @@ class TitleTab:
         title = self.keyword_entry.get()
         fmt = self.fmt.get()
         result = self.app.ctrl.on_title_single(title, fmt)
-        self.app.append_output('\n'.join(result.get('messages', [])))
+        # 显示 messages 和 df 内容
+        messages = '\n'.join(result.get('messages', []))
+        df_content = result.get('df', '')
+        output_file = result.get('output_file', '')
+        full_output = f"{messages}\n{df_content}\n输出文件: {output_file}"
+        self.app.append_output(full_output)
 
     def on_load_title_batch_file(self):
         self.file_path = self.app.load_file()
@@ -104,7 +109,11 @@ class TitleTab:
             self.app.append_output("请先输入关键词或选择文件。")
             return
         result = self.app.ctrl.on_title_batch(key, fmt)
-        self.app.append_output('\n'.join(result.get('messages', [])))
+        # 精简输出，仅显示关键信息
+        messages = '\n'.join(result.get('messages', []))
+        output_file = result.get('output_file', '')
+        full_output = f"{messages}\n输出文件: {output_file}"
+        self.app.append_output(full_output)
 
 
 def create(app, parent):
