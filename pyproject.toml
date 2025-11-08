@@ -1,0 +1,13 @@
+[project]
+name = "Lib_query"
+description = "面向对象的图书检索与管理工具，支持多种检索方式，基于Tkinter和pandas。"
+version = "0.1.0"
+authors = ["Your Name <your@email.com>"]
+
+[tool.poetry.dependencies]
+pandas = "*"
+tkinter = "*"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
