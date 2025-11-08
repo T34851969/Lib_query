@@ -24,18 +24,18 @@ class CallNumPieceTab:
         self.cn_part_entry.grid(column=1, row=1, padx=5,
                                pady=5, sticky=tk.EW, columnspan=2)
         single_search_btn = ttk.Button(self.parent, text="开始搜索",
-                                       command=self.on_cn_part_search)
+                                       command=self.click_single)
         single_search_btn.grid(column=3, row=1, padx=5, pady=5)
 
         # 输出格式选择 (单次搜索)
         ttk.Label(self.parent, text="单次输出格式:").grid(
             column=0, row=2, padx=10, pady=5, sticky=tk.W)
-        self.cn_part_format_var = tk.StringVar(value="excel")
+        self.fmt_var = tk.StringVar(value="excel")
         format_frame = ttk.Frame(self.parent)
         format_frame.grid(column=1, row=2, padx=5, pady=2, sticky=tk.W)
-        ttk.Radiobutton(format_frame, text=".xlsx", variable=self.cn_part_format_var,
+        ttk.Radiobutton(format_frame, text=".xlsx", variable=self.fmt_var,
                         value="excel").pack(side=tk.LEFT, padx=4)
-        ttk.Radiobutton(format_frame, text=".csv", variable=self.cn_part_format_var,
+        ttk.Radiobutton(format_frame, text=".csv", variable=self.fmt_var,
                         value="csv").pack(side=tk.LEFT, padx=4)
 
         # 分隔线
@@ -57,17 +57,17 @@ class CallNumPieceTab:
         self.cn_batch_text.grid(column=1, row=6, columnspan=3,
                                padx=(0, 10), pady=(0, 10), sticky=tk.EW)
 
-        self.cn_batch_format_var = tk.StringVar(value="excel")
+        self.batch_fmt = tk.StringVar(value="excel")
         batch_format_frame = ttk.Frame(self.parent)
         batch_format_frame.grid(column=0, row=5, padx=2, pady=1, sticky=tk.W)
         ttk.Radiobutton(batch_format_frame, text=".xlsx",
-                        variable=self.cn_batch_format_var, value="excel").pack(side=tk.LEFT, padx=4)
+                        variable=self.batch_fmt, value="excel").pack(side=tk.LEFT, padx=4)
         ttk.Radiobutton(batch_format_frame, text=".csv",
-                        variable=self.cn_batch_format_var, value="csv").pack(side=tk.LEFT, padx=4)
+                        variable=self.batch_fmt, value="csv").pack(side=tk.LEFT, padx=4)
 
         # 批量搜索按钮
         batch_search_btn = ttk.Button(
-            self.parent, text="开始搜索（批量）", command=self.on_cn_batch_search, state='normal')
+            self.parent, text="开始搜索（批量）", command=self.click_batch, state='normal')
         batch_search_btn.grid(
             column=2, row=4, padx=5, pady=2, columnspan=2)
 
@@ -80,19 +80,19 @@ class CallNumPieceTab:
         info_label2.grid(column=0, row=6, columnspan=4,
                          padx=10, pady=2, sticky=tk.W)
 
-    def on_cn_part_search(self):
+    def click_single(self):
         value = self.cn_part_entry.get()
-        fmt = self.cn_part_format_var.get()
-        result = self.app.ctrl.on_cn_part_single(value, fmt)
+        fmt = self.fmt_var.get()
+        result = self.app.ctrl.on_call_num_piece_single(value, fmt)
         self.app.append_output('\n'.join(result.get('messages', [])))
 
     def on_load_cn_batch_file(self):
-        self.app.load_cn_batch_file()
+        self.app.load_file()
 
-    def on_cn_batch_search(self):
+    def click_batch(self):
         values = self.cn_batch_text.get('1.0', tk.END).strip().splitlines()
-        fmt = self.cn_batch_format_var.get()
-        result = self.app.ctrl.on_cn_batch(values, fmt)
+        fmt = self.batch_fmt.get()
+        result = self.app.ctrl.on_call_num_piece_batch(values, fmt)
         self.app.append_output('\n'.join(result.get('messages', [])))
 
 def create(app, parent):

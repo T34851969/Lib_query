@@ -80,9 +80,9 @@ class SearchBase(ABC):
                 "output_file": str(output_file) if output_file else None}
 
     @abstractmethod
-    def search(keyword: str, fmt: str):
+    def search(conn, keyword: str, fmt: str):
         pass
 
     @abstractmethod
-    def batch_search(file_path: str, fmt: str):
+    def batch_search(conn, file_path: str, fmt: str):
         pass

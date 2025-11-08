@@ -20,8 +20,8 @@ class TitleTab:
         # 单次搜索部分
         ttk.Label(self.parent, text="请输入关键词：").grid(
             column=0, row=1, padx=10, pady=5, sticky=tk.W)
-        self.title_keywords_entry = ttk.Entry(self.parent, width=40, font=('Arial', 10))
-        self.title_keywords_entry.grid(column=1, row=1, padx=5,
+        self.keyword_entry = ttk.Entry(self.parent, width=40, font=('Arial', 10))
+        self.keyword_entry.grid(column=1, row=1, padx=5,
                                pady=5, sticky=tk.EW, columnspan=2)
         search_btn = ttk.Button(self.parent, text="开始搜索",
                                command=self.on_title_search)
@@ -30,12 +30,12 @@ class TitleTab:
         # 输出格式选择（单次）
         ttk.Label(self.parent, text="选择输出格式:").grid(
             column=0, row=2, padx=10, pady=5, sticky=tk.W)
-        self.title_format_var = tk.StringVar(value="excel")
+        self.fmt = tk.StringVar(value="excel")
         format_frame = ttk.Frame(self.parent)
         format_frame.grid(column=1, row=2, padx=5, pady=2, sticky=tk.W)
-        ttk.Radiobutton(format_frame, text=".xlsx", variable=self.title_format_var,
+        ttk.Radiobutton(format_frame, text=".xlsx", variable=self.fmt,
                         value="excel").pack(side=tk.LEFT, padx=4)
-        ttk.Radiobutton(format_frame, text=".csv", variable=self.title_format_var,
+        ttk.Radiobutton(format_frame, text=".csv", variable=self.fmt,
                         value="csv").pack(side=tk.LEFT, padx=4)
 
         # 分隔线
@@ -58,13 +58,13 @@ class TitleTab:
         self.title_batch_text.grid(column=1, row=6, columnspan=3,
                                padx=(0, 10), pady=(0, 10), sticky=tk.EW)
 
-        self.title_batch_format_var = tk.StringVar(value="excel")
+        self.batch_fmt = tk.StringVar(value="excel")
         batch_format_frame = ttk.Frame(self.parent)
         batch_format_frame.grid(column=0, row=5, padx=2, pady=1, sticky=tk.W)
         ttk.Radiobutton(batch_format_frame, text=".xlsx",
-                        variable=self.title_batch_format_var, value="excel").pack(side=tk.LEFT, padx=4)
+                        variable=self.batch_fmt, value="excel").pack(side=tk.LEFT, padx=4)
         ttk.Radiobutton(batch_format_frame, text=".csv",
-                        variable=self.title_batch_format_var, value="csv").pack(side=tk.LEFT, padx=4)
+                        variable=self.batch_fmt, value="csv").pack(side=tk.LEFT, padx=4)
 
         # 批量搜索按钮
         batch_search_btn = ttk.Button(
@@ -82,17 +82,17 @@ class TitleTab:
                          padx=10, pady=2, sticky=tk.W)
 
     def on_title_search(self):
-        title = self.title_keywords_entry.get()
-        fmt = self.title_format_var.get()
+        title = self.keyword_entry.get()
+        fmt = self.fmt.get()
         result = self.app.ctrl.on_title_single(title, fmt)
         self.app.append_output('\n'.join(result.get('messages', [])))
 
     def on_load_title_batch_file(self):
-        self.app.load_title_batch_file()
+        self.app.load_file()
 
     def on_title_batch_search(self):
         values = self.title_batch_text.get('1.0', tk.END).strip().splitlines()
-        fmt = self.title_batch_format_var.get()
+        fmt = self.batch_fmt.get()
         result = self.app.ctrl.on_title_batch(values, fmt)
         self.app.append_output('\n'.join(result.get('messages', [])))
 

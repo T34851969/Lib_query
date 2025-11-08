@@ -8,18 +8,23 @@
 from typing import Optional
 import tkinter as tk
 
+
 from .core_tab import LibraryApp
-from .style_config import apply as apply_style
+from lib_query.gui.style_config import StyleConfig
+
+def apply_style(root, theme=None):
+  return StyleConfig.apply(root, theme)
 
 __all__ = ["LibraryApp", "apply_style", "create_app"]
 
 
-def create_app(root: tk.Tk, *, load_tabs: bool = True, theme: Optional[str] = None) -> LibraryApp:
+def create_app(root: tk.Tk, *, ctrl=None, load_tabs: bool = True, theme: Optional[str] = None) -> LibraryApp:
     """
     创建 LibraryApp 实例并（可选）加载包内的标签模块。
 
     参数:
       root: 已创建的 tk.Tk 或 tk.Toplevel 对象。
+      ctrl: 可选，传入的控制器实例（如 CentreCrtl），用于全局共享。
       load_tabs: 是否在创建后自动调用 app.load_tab_modules()。
       theme: 如果提供，则在创建前应用该主题（会调用 apply_style）。
 
@@ -28,8 +33,7 @@ def create_app(root: tk.Tk, *, load_tabs: bool = True, theme: Optional[str] = No
     """
     if theme is not None:
         apply_style(root, theme=theme)
-    # 这里允许外部覆盖主题
-    app = LibraryApp(root)
+    app = LibraryApp(root, ctrl=ctrl)  # 传递 ctrl 实例
     if load_tabs:
         app.load_tab_modules()
     return app
