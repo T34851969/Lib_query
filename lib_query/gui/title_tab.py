@@ -25,9 +25,9 @@ def create(app, parent):
     app.title_format_var = tk.StringVar(value="excel")
     format_frame = ttk.Frame(parent)
     format_frame.grid(column=1, row=2, padx=5, pady=2, sticky=tk.W)
-    ttk.Radiobutton(format_frame, text=".xlsx", variable=app.cn_part_format_var,
+    ttk.Radiobutton(format_frame, text=".xlsx", variable=app.title_format_var,
                     value="excel").pack(side=tk.LEFT, padx=4)
-    ttk.Radiobutton(format_frame, text=".csv", variable=app.cn_part_format_var,
+    ttk.Radiobutton(format_frame, text=".csv", variable=app.title_format_var,
                     value="csv").pack(side=tk.LEFT, padx=4)
 
     # 搜索按钮
@@ -42,4 +42,4 @@ def create(app, parent):
     info_label = ttk.Label(parent, text="💡 提示：只能输入一个关键词",
                            foreground='gray')
     info_label.grid(column=0, row=4, columnspan=3,
-                    padx=10, pady=5, sticky=tk.W)
+                    padx=10, pady=5, sticky='tk.W')

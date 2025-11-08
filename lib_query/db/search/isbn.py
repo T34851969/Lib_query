@@ -1,77 +1,74 @@
-"""根据 ISBN 精确搜索书籍，并导出结果"""
+"""根据 ISBN 精确搜索书籍，并导出结果 (类封装版)"""
 
 import pandas as pd
 from pathlib import Path
 from typing import Optional
 from ..core import LibraryDatabase
+from .search_base import SearchBase
 
 
-def clean_name(filename: str, replace_char: str = '-') -> str:
-    illegal_chars = '<>:"/\\|?*'
-    trans_table = str.maketrans(
-        illegal_chars, replace_char * len(illegal_chars))
-    return filename.translate(trans_table)
+class ISBNSearch(SearchBase):
+    def search(self, ISBN: str, fmt: str = 'excel') -> Optional[dict]:
+        msg = []
+        if not ISBN or not ISBN.strip():
+            msg.append("非法输入")
+            return {"df": None, "messages": msg, "output_file": None}
 
+        raw_isbn = ISBN.strip()
+        msg.append(f"搜索标准号: {raw_isbn}")
 
-def escape(word: str) -> str:
-    return word.replace('%', '[%]').replace('_', '[_]')
+        try:
+            with LibraryDatabase() as conn:
+                isbn = self.escape(raw_isbn)
+                sql = 'SELECT * FROM books WHERE 标准号=?'
+                params = [isbn]
 
+                msg.append("正在执行搜索...")
+                df = pd.read_sql_query(sql, conn, params=params)
+                msg.append(f"搜索完成！找到 {len(df)} 条记录")
 
-def search(ISBN: str, fmt: str = 'excel') -> Optional[pd.DataFrame]:
-    if not ISBN.strip():
-        print("非法输入")
-        return None
-    print(f"搜索标准号: {ISBN}")
+                return self.output(raw_isbn, df, fmt, 3, msg)
 
-    with LibraryDatabase() as conn:
-        isbn = escape(ISBN.strip())
-        sql = 'SELECT * FROM books WHERE 标准号=?'
-        params = [isbn]
+        except Exception as e:
+            msg.append(f"搜索失败: {e}")
+            return {"df": None, "messages": msg, "output_file": None}
 
-        print("正在执行搜索...")
-        df = pd.read_sql_query(sql, conn, params=params)
-        print(f"搜索完成！找到 {len(df)} 条记录")
+    def batch_search(self, key, fmt: str = 'excel'):
+        msg = []
+        isbns = self.import_input(key, msg, 3)
 
-        output_dir = Path('output') / '标准号搜索结果'
-        output_dir.mkdir(parents=True, exist_ok=True)
+        if isinstance(isbns, dict):
+            return isbns
 
-        safe_isbn = isbn[:20] if len(isbn) > 20 else isbn
-        final_name = clean_name(safe_isbn)
+        found_any = False
 
-        if fmt.lower() == 'csv':
-            output_file = output_dir / f"{final_name}.csv"
-            df.to_csv(output_file, index=False, encoding='utf-8-sig')
-            print(f"结果已保存到: {output_file}")
+        try:
+            with LibraryDatabase() as conn:
+                for isbn in isbns:
+                    raw_isbn = isbn.strip()
+                    if not raw_isbn:
+                        continue
+                    msg.append(f"搜索标准号: {raw_isbn}")
+
+                    isbn_ = self.escape(raw_isbn)
+                    sql = 'SELECT * FROM books WHERE 标准号=?'
+                    params = [isbn_]
+
+                    msg.append("正在执行搜索...")
+                    df = pd.read_sql_query(sql, conn, params=params)
+                    msg.append(f"搜索完成！找到 {len(df)} 条记录")
+
+                    result = self.output(raw_isbn, df, fmt, 3, msg)
+                    if result and result.get("df_obj") is not None and not result["df_obj"].empty:
+                        found_any = True
+
+        except Exception as e:
+            msg.append(f"搜索失败: {e}")
+            return {"df": None, "messages": msg, "output_file": None}
+
+        if not found_any:
+            msg.append("所有搜索均未找到匹配项")
+            return {"df": None, "messages": msg, "output_file": None}
         else:
-            output_file = output_dir / f"{final_name}.xlsx"
-            df.to_excel(output_file, index=False, engine='xlsxwriter')
-            print(f"结果已保存到: {output_file}")
-
-        return df.head()
-
-
-def batch_search(file_path, fmt: str = 'excel'):
-    # 根据 TXT 文件中的ISBN逐行批量搜索，并导出结果
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            isbns = [line.strip() for line in f.readlines() if line.strip()]
-    except Exception as e:
-        print(f"读取文件时出错: {e}")
-        return None
-
-    if not isbns:
-        print("文件中无有效内容")
-        return None
-
-    print(f"从文件加载 {len(isbns)} 个标准号: {isbns}")
-
-    found_any = False
-    for isbn in isbns:
-        df_result = search(isbn, fmt).head()
-        if df_result is not None and not df_result.empty:
-            found_any = True
-
-    if not found_any:
-        print("所有搜索均未找到匹配项")
-    else:
-        print(f"批量搜索完成！")
+            msg.append("批量搜索完成！")
+            return result

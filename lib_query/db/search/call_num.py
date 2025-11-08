@@ -2,79 +2,74 @@
 
 import pandas as pd
 from ..core import LibraryDatabase
-from pathlib import Path
 from typing import Optional
+from .search_base import SearchBase
 
 
-def clean_name(filename: str, replace_char: str = '-') -> str:
-    illegal_chars = '<>:"/\\|?*'
-    trans_table = str.maketrans(
-        illegal_chars, replace_char * len(illegal_chars))
-    return filename.translate(trans_table)
+class CallNumberSearch(SearchBase):
 
+    def search(self, call_number: str, fmt: str = 'excel') -> Optional[dict]:
+        msg: list = []
+        if not call_number or not call_number.strip():
+            msg.append("非法输入")
+            return {"df": None, "messages": msg, "output_file": None}
 
-def escape(word: str) -> str:
-    return word.replace('%', '[%]').replace('_', '[_]')
+        raw_cn = call_number.strip()
+        msg.append(f"搜索: {raw_cn}")
 
+        try:
+            with LibraryDatabase() as conn:
+                sql = 'SELECT * FROM books WHERE "索书号" = ?'
+                params = [self.escape(raw_cn)]
 
-def search(call_number, fmt='excel') -> Optional[pd.DataFrame]:
-    if not call_number.strip():
-        print("非法输入")
-        return None
+                msg.append("正在执行搜索...")
+                df = pd.read_sql_query(sql, conn, params=params)
+                msg.append(f"搜索完成！找到 {len(df)} 条记录")
 
-    print(f"精确搜索索书号: {call_number}")
+                return self.output(raw_cn, fmt, 2, msg)
 
-    with LibraryDatabase() as conn:
-        sql = 'SELECT * FROM books WHERE 索书号=?'
-        params = [escape(call_number)]
+        except Exception as e:
+            msg.append(f"搜索失败: {e}")
+            return {"df": None, "df_obj": None, "messages": msg, "output_file": None}
 
-        print("正在执行搜索...")
-        df = pd.read_sql_query(sql, conn, params=params)
+    def batch_search(self, key, fmt: str = 'excel'):
+        msg = []
+        call_numbers = self.import_input(key, msg, 2)
 
-        print(f"搜索完成！找到 {len(df)} 条记录")
+        if isinstance(call_numbers, dict):
+            return call_numbers
 
-        safe_Num = call_number[:20] if len(call_number) > 20 else call_number
-        safe_Num = clean_name(safe_Num)
+        found_any = False
+        try:
+            with LibraryDatabase() as conn:
+                for call_number in call_numbers:
+                    raw_cn = call_number.strip()
+                    if not raw_cn:
+                        continue
 
-        output_dir = Path('output') / '索书号切片搜索结果'
-        output_dir.mkdir(parents=True, exist_ok=True)
+                    sql = 'SELECT * FROM books WHERE "索书号" = ?'
+                    params = [self.escape(raw_cn)]
 
-        if fmt.lower() == 'csv':
-            output_file = output_dir / f"{safe_Num}.csv"
-            df.to_csv(output_file, index=False, encoding='utf-8-sig')
-            print(f"结果已保存到: {output_file}")
+                    msg.append(f"正在执行搜索: {raw_cn} ...")
+                    try:
+                        df = pd.read_sql_query(sql, conn, params=params)
+                    except Exception as e:
+                        msg.append(f"查询出错（{raw_cn}）: {e}")
+                        df = pd.DataFrame()
+
+                    msg.append(f"搜索完成！找到 {len(df)} 条记录")
+
+                    result = self.output(raw_cn, df, fmt, 2, msg)
+                    if result and result.get("df_obj") is not None and not result["df_obj"].empty:
+                        found_any = True
+
+        except Exception as e:
+            msg.append(f"批量搜索时数据库连接出错: {e}")
+            return {"df": None, "messages": msg, "output_file": None}
+
+        if not found_any:
+            msg.append("所有搜索均未找到匹配项")
+            return {"df": None, "messages": msg, "output_file": None}
         else:
-            output_file = output_dir / f"{safe_Num}.xlsx"
-            df.to_excel(output_file, index=False, engine='xlsxwriter')
-            print(f"结果已保存到: {output_file}")
-        return df.head()
-
-
-def batch_search(file_path, fmt='excel'):
-    # 根据TXT文件中的索书号进行批量筛选，并导出结果
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            call_num = [line.strip() for line in f.readlines() if line.strip()]
-    except Exception as e:
-        print(f"读取文件时出错: {e}")
-        return None
-
-    if not call_num:
-        print("文件中无有效内容")
-        return None
-
-    print(f"从文件加载 {len(call_num)} 个索书号: {call_num}")
-
-    found_any = False
-    for part in call_num:
-        df_result = search(part, fmt)
-        if df_result is not None and not df_result.empty:
-            found_any = True
-
-    if not found_any:
-        print("所有搜索均未找到匹配项")
-        return
-    else:
-        print(f"批量搜索完成！")
-        if df_result is not None:
-            return df_result.head()
+            msg.append("批量搜索完成！")
+            return result

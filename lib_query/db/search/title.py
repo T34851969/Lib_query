@@ -1,66 +1,76 @@
-"""根据标题搜索书籍，单次搜索"""
+"""根据书名筛选书籍，并导出结果"""
 
 import pandas as pd
 from ..core import LibraryDatabase
-from pathlib import Path
 from typing import Optional
-
-def clean_name(filename: str, replace_char: str = '-') -> str:
-    illegal_chars = '<>:"/\\|?*'
-    trans_table = str.maketrans(
-        illegal_chars, replace_char * len(illegal_chars))
-    return filename.translate(trans_table)
+from .search_base import SearchBase
 
 
-def escape(word: str) -> str:
-    return word.replace('%', '[%]').replace('_', '[_]')
+class TitleSearch(SearchBase):
 
+    def search(self, title: str, fmt: str = 'excel') -> Optional[dict]:
+        msg: list = []
+        if not title or not title.strip():
+            msg.append("非法输入")
+            return {"df": None, "messages": msg, "output_file": None}
 
-def title(self, keyword: str, fmt: str = 'excel') -> Optional[pd.DataFrame]:
-    messages = []
-    if not keyword:
-        messages.append("请输入关键词")
-        return {"df": None, "messages": messages, "output_file": None}
+        raw_title = title.strip()
+        msg.append(f"搜索: {raw_title}")
 
-    raw_keyword = keyword.strip()
-    escaped_keyword = self.escape(raw_keyword)
-    messages.append(f"搜索关键词: {raw_keyword}")
+        try:
+            with LibraryDatabase() as conn:
 
-    sql = "SELECT * FROM books WHERE 题名 LIKE ?"
-    params = (f"%{escaped_keyword}%",)
+                sql = 'SELECT * FROM books WHERE "题名" LIKE ?'
+                params = [f"%{raw_title}%"]
 
-    try:
-        with LibraryDatabase() as conn:
-            messages.append("正在搜索...")
-            df = pd.read_sql_query(sql, conn, params=params)
-            messages.append(f"搜索完成！找到 {len(df)} 条记录")
+                msg.append("正在执行搜索...")
+                df = pd.read_sql_query(sql, conn, params=params)
+                msg.append(f"搜索完成！找到 {len(df)} 条记录")
 
-            output_dir = Path('output') / '标题搜索结果'
-            output_dir.mkdir(parents=True, exist_ok=True)
+                return self.output(raw_title, df, fmt, 4, msg)
 
-            safe_keyword = self.clean_name(raw_keyword[:20])
-            count = len(df)
-            output_file = None
+        except Exception as e:
+            msg.append(f"搜索失败: {e}")
+            return {"df": None, "messages": msg, "output_file": None}
 
-            if fmt.lower().strip() == 'csv':
-                output_file = output_dir / f"查询：{safe_keyword}——{count}个结果.csv"
-                try:
-                    df.to_csv(output_file, index=False, encoding='utf-8-sig')
-                    messages.append(f"结果已保存到: {str(output_file)}")
-                except Exception as e:
-                    messages.append(f"保存CSV文件时出错: {e}")
-            else:
-                output_file = output_dir / \
-                    f"查询：{safe_keyword}——{count}个结果.xlsx"
-                try:
-                    df.to_excel(output_file, index=False, engine='xlsxwriter')
-                    messages.append(f"结果已保存到: {str(output_file)}")
-                except Exception as e:
-                    messages.append(f"保存Excel文件时出错: {e}")
+    def batch_search(self, key, fmt: str = 'excel'):
+        msg = []
+        titles = self.import_input(key, msg, 1)
 
-            return {"df": df.head().to_string(index=False), "messages": messages,
-                    "output_file": str(output_file) if output_file else None}
+        if isinstance(titles, dict):
+            return titles
 
-    except Exception as e:
-        messages.append(f"搜索失败: {e}")
-        return {"df": None, "messages": messages, "output_file": None}
+        found_any = False
+        try:
+            with LibraryDatabase() as conn:
+                for title in titles:
+                    raw_title = title.strip()
+                    if not raw_title:
+                        continue
+
+                    sql = 'SELECT * FROM books WHERE "题名" LIKE ?'
+                    params = [f"%{raw_title}%"]
+
+                    msg.append(f"正在执行搜索: {raw_title} ...")
+                    try:
+                        df = pd.read_sql_query(sql, conn, params=params)
+                    except Exception as e:
+                        msg.append(f"查询出错（{raw_title}）: {e}")
+                        df = pd.DataFrame()
+
+                    msg.append(f"搜索完成！找到 {len(df)} 条记录")
+
+                    result = self.output(raw_title, df, fmt, 4, msg)
+                    if result and result.get("df") is not None:
+                        found_any = True
+
+        except Exception as e:
+            msg.append(f"批量搜索时数据库连接出错: {e}")
+            return {"df": None, "messages": msg, "output_file": None}
+
+        if not found_any:
+            msg.append("所有搜索均未找到匹配项")
+            return {"df": None, "messages": msg, "output_file": None}
+        else:
+            msg.append("批量搜索完成！")
+            return result

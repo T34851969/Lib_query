@@ -1,88 +1,98 @@
 """根据索书号的一部分筛选书籍，并导出结果"""
+
 import pandas as pd
 from ..core import LibraryDatabase
-from pathlib import Path
 from typing import Optional
+from .search_base import SearchBase
 
 
-def clean_name(filename: str, replace_char: str = '-') -> str:
-    illegal_chars = '<>:"/\\|?*'
-    trans_table = str.maketrans(
-        illegal_chars, replace_char * len(illegal_chars))
-    return filename.translate(trans_table)
+class CallNumberPieceSearch(SearchBase):
 
+    def search(self, part: str, fmt: str = 'excel') -> Optional[dict]:
+        msg: list = []
+        if not part or not part.strip():
+            msg.append("非法输入")
+            return {"df": None, "messages": msg, "output_file": None}
 
-def escape(word: str) -> str:
-    return word.replace('%', '[%]').replace('_', '[_]')
+        raw_part = part.strip()
+        msg.append(f"搜索: {raw_part}")
 
+        try:
+            with LibraryDatabase() as conn:
+                # 动态构建列名
+                idx = len(raw_part)
+                if idx > 5:
+                    idx -= 1
+                column_name = f"level_{idx}"
+                part_escaped = self.escape(raw_part)
 
-def search(part: str, fmt='excel', db_path="图书馆详细馆藏.db") -> Optional[pd.DataFrame]:
-    if not part.strip():
-        print("非法输入")
-        return None
-    print(f"搜索: {part}")
+                # 构建特殊搜索请求
+                if column_name == 'level_5' and len(part_escaped) == 5:
+                    sql = f"SELECT * FROM books WHERE level_5 LIKE ?"
+                    params = [f"{part_escaped}%"]
+                else:
+                    sql = f'SELECT * FROM books WHERE "level_{idx}" = ?'
+                    params = [part_escaped]
 
-    with LibraryDatabase() as conn:
-        # 动态构建列名
-        idx = len(part)
-        if idx > 5:
-            idx -= 1
-        column_name = f"level_{idx}"
+                # 搜索
+                msg.append("正在执行搜索...")
+                df = pd.read_sql_query(sql, conn, params=params)
+                msg.append(f"搜索完成！找到 {len(df)} 条记录")
 
-        part = escape(part.strip())
+                return self.output(raw_part, df, fmt, 1, msg)
 
-        # 构建特殊搜索请求
-        if column_name == 'level_5' and len(part) == 5:
-            sql = f"SELECT * FROM books WHERE level_5 LIKE ?"
-            params = [f"{part}%"]
+        except Exception as e:
+            msg.append(f"搜索失败: {e}")
+            return {"df": None, "messages": msg, "output_file": None}
+
+    def batch_search(self, key, fmt: str = 'excel'):
+        msg = []
+        parts = self.import_input(key, msg, 1)
+
+        if isinstance(parts, dict):
+            return parts
+
+        found_any = False
+        try:
+            with LibraryDatabase() as conn:
+                for part in parts:
+                    raw_part = part.strip()
+                    if not raw_part:
+                        continue
+
+                    idx = len(raw_part)
+                    if idx > 5:
+                        idx -= 1
+                    column_name = f"level_{idx}"
+                    part_escaped = self.escape(raw_part)
+
+                    if column_name == 'level_5' and len(part_escaped) == 5:
+                        sql = f"SELECT * FROM books WHERE level_5 LIKE ?"
+                        params = [f"{part_escaped}%"]
+                    else:
+                        sql = f'SELECT * FROM books WHERE "level_{idx}" = ?'
+                        params = [part_escaped]
+
+                    msg.append(f"正在执行搜索: {raw_part} ...")
+                    try:
+                        df = pd.read_sql_query(sql, conn, params=params)
+                    except Exception as e:
+                        msg.append(f"查询出错（{raw_part}）: {e}")
+                        df = pd.DataFrame()
+
+                    msg.append(f"搜索完成！找到 {len(df)} 条记录")
+
+                    result = self.output(raw_part, df, fmt, 1, msg)
+                    if result and result.get("df") is not None:
+                        found_any = True
+
+        except Exception as e:
+            msg.append(f"批量搜索时数据库连接出错: {e}")
+            return {"df": None, "messages": msg, "output_file": None}
+
+        if not found_any:
+            msg.append("所有搜索均未找到匹配项")
+            return {"df": None, "messages": msg, "output_file": None}
         else:
-            sql = f'SELECT * FROM books WHERE "level_{idx}" = ?'
-            params = [part]
-
-        # 查询
-        print("正在执行搜索...")
-        df = pd.read_sql_query(sql, conn, params=params)
-        print(f"搜索完成！找到 {len(df)} 条记录")
-
-        output_dir = Path('output') / '索书号切片搜索结果'
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        safe_call_number = part[:20] if len(part) > 20 else part
-        final_cn = clean_name(safe_call_number)
-
-        if fmt.lower() == 'csv':
-            output_file = output_dir / f"{final_cn}.csv"
-            df.to_csv(output_file, index=False, encoding='utf-8-sig')
-            print(f"结果已保存到: {output_file}")
-        else:
-            output_file = output_dir / f"{final_cn}.xlsx"
-            df.to_excel(output_file, index=False, engine='xlsxwriter')
-            print(f"结果已保存到: {output_file}")
-        return df.head()
-
-
-def batch_search(file_path, fmt='excel', db_path="图书馆详细馆藏.db"):
-    # 根据 TXT 文件中的索书号部分进行批量筛选，并导出结果
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            parts = [line.strip() for line in f.readlines() if line.strip()]
-    except Exception as e:
-        print(f"读取文件时出错: {e}")
-        return None
-
-    if not parts:
-        print("文件中无有效内容")
-        return None
-
-    print(f"从文件加载 {len(parts)} 个索书号片段: {parts}")
-
-    found_any = False
-    for part in parts:
-        df_result = search(part, fmt, db_path)
-        if df_result is not None and not df_result.empty:
-            found_any = True
-
-    if not found_any:
-        print("所有搜索均未找到匹配项")
-    else:
-        print(f"批量搜索完成！")
+            msg.append("批量搜索完成！")
+            return result
