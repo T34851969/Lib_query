@@ -76,7 +76,7 @@ class CallNumPieceTab:
         self.parent.columnconfigure(1, weight=1)
 
         # 添加说明
-        info_label2 = ttk.Label(self.parent, text="每次输入一个\n或导入.txt/.csv文件\n或在右边粘贴\n每行一个",
+        info_label2 = ttk.Label(self.parent, text="每次输入一个\n或导入.txt文件\n或在右边粘贴\n每行一个",
                                 foreground='gray')
         info_label2.grid(column=0, row=6, columnspan=4,
                          padx=10, pady=2, sticky=tk.W)
@@ -89,6 +89,7 @@ class CallNumPieceTab:
 
     def on_load_cn_batch_file(self):
         self.file_path = self.app.load_file()
+        self.app.append_output(f"已选择文件：{self.file_path}")
 
     def click_batch(self):
         keys = self.cn_batch_text.get('1.0', tk.END).strip().splitlines()

@@ -18,7 +18,7 @@ class TitleSearch(SearchBase):
 
         try:
             sql = 'SELECT * FROM books WHERE "题名" LIKE ?'
-            params = [f"%{raw_title}%"]
+            params = (f"%{raw_title}%",)  # 改为 tuple[str] 以匹配 pandas 类型要求
 
             msg.append("正在执行搜索...")
             df = pd.read_sql_query(sql, conn, params=params)
@@ -45,7 +45,7 @@ class TitleSearch(SearchBase):
                     continue
 
                 sql = 'SELECT * FROM books WHERE "题名" LIKE ?'
-                params = [f"%{raw_title}%"]
+                params = (f"%{raw_title}%",)
 
                 msg.append(f"正在执行搜索: {raw_title} ...")
                 try:

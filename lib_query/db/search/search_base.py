@@ -49,7 +49,7 @@ class SearchBase(ABC):
         return res
 
     @staticmethod
-    def output(key: str, df: pandas.DataFrame, fmt: str, t: int, msg: dict) -> Optional[dict]:
+    def output(key: str, df: pandas.DataFrame, fmt: str, t: int, msg: list) -> Optional[dict]:
 
         # 准备输出
         output_dir = Path('output') / SearchBase.mod_dict[t]

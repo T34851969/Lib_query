@@ -1,5 +1,6 @@
 """根据索书号的一部分筛选书籍，并导出结果"""
 
+import turtle
 import pandas as pd
 from typing import Optional
 from .search_base import SearchBase
@@ -25,12 +26,13 @@ class CallNumberPieceSearch(SearchBase):
             part_escaped = self.escape(raw_part)
 
             # 构建特殊搜索请求
+            params: tuple = ()
             if column_name == 'level_5' and len(part_escaped) == 5:
                 sql = f"SELECT * FROM books WHERE level_5 LIKE ?"
-                params = [f"{part_escaped}%"]
+                params = (f"{part_escaped}%",)
             else:
                 sql = f'SELECT * FROM books WHERE "level_{idx}" = ?'
-                params = [part_escaped]
+                params = (part_escaped,)
 
             # 搜索
             msg.append("正在执行搜索...")
@@ -63,12 +65,13 @@ class CallNumberPieceSearch(SearchBase):
                 column_name = f"level_{idx}"
                 part_escaped = self.escape(raw_part)
 
+                params: tuple = ()
                 if column_name == 'level_5' and len(part_escaped) == 5:
                     sql = f"SELECT * FROM books WHERE level_5 LIKE ?"
-                    params = [f"{part_escaped}%"]
+                    params = (f"{part_escaped}%",)
                 else:
                     sql = f'SELECT * FROM books WHERE "level_{idx}" = ?'
-                    params = [part_escaped]
+                    params = (part_escaped,)
 
                 msg.append(f"正在执行搜索: {raw_part} ...")
                 try:

@@ -18,7 +18,7 @@ class CallNumberSearch(SearchBase):
 
         try:
             sql = 'SELECT * FROM books WHERE "索书号" = ?'
-            params = [self.escape(raw_cn)]
+            params = (self.escape(raw_cn),)
 
             msg.append("正在执行搜索...")
             df = pd.read_sql_query(sql, conn, params=params)
@@ -45,7 +45,7 @@ class CallNumberSearch(SearchBase):
                     continue
 
                 sql = 'SELECT * FROM books WHERE "索书号" = ?'
-                params = [self.escape(raw_cn)]
+                params = (self.escape(raw_cn),)
 
                 msg.append(f"正在执行搜索: {raw_cn} ...")
                 try:

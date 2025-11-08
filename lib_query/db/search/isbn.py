@@ -18,13 +18,13 @@ class ISBNSearch(SearchBase):
         try:
             isbn = self.escape(raw_isbn)
             sql = 'SELECT * FROM books WHERE 标准号=?'
-            params = [isbn]
+            params = (isbn,)
 
             msg.append("正在执行搜索...")
-            df = pd.read_sql_query(sql, conn, params=params)
+            df = pd.read_sql_query(sql, conn, params=params) # pyright: ignore[reportArgumentType]
             msg.append(f"搜索完成！找到 {len(df)} 条记录")
 
-            return self.output(raw_isbn, df, fmt, 3, msg)
+            return self.output(raw_isbn, df, fmt, 3, msg) # pyright: ignore[reportArgumentType]
 
         except Exception as e:
             msg.append(f"搜索失败: {e}")
@@ -48,18 +48,18 @@ class ISBNSearch(SearchBase):
 
                 isbn_ = self.escape(raw_isbn)
                 sql = 'SELECT * FROM books WHERE 标准号=?'
-                params = [isbn_]
+                params = (isbn_,)
 
                 msg.append("正在执行搜索...")
                 try:
-                    df = pd.read_sql_query(sql, conn, params=params)
+                    df = pd.read_sql_query(sql, conn, params=params) # type: ignore
                 except Exception as e:
                     msg.append(f"查询出错（{raw_isbn}）: {e}")
                     df = pd.DataFrame()
 
                 msg.append(f"搜索完成！找到 {len(df)} 条记录")
 
-                result = self.output(raw_isbn, df, fmt, 3, msg)
+                result = self.output(raw_isbn, df, fmt, 3, msg) # type: ignore
                 if result and result.get("df") is not None:
                     found_any = True
 
