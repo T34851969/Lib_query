@@ -49,7 +49,7 @@ class LibraryApp:
                 self.append_output(f"{tab_info['name']}: 创建窗口失败: {e}")
                 continue
 
-    def load_file():
+    def load_file(self):
         try:
             root = tk.Tk()
             root.overrideredirect(True)

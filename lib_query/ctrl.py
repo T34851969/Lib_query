@@ -11,35 +11,43 @@ class CentreCtrl:
 
     def on_title_single(self, title, fmt):
         with self.database as conn:
-            return TitleSearch.search(conn, title, fmt)
+            TS = TitleSearch()
+            return TS.search(conn, title, fmt)
 
     def on_title_batch(self, key, fmt):
         with self.database as conn:
-            return TitleSearch.batch_search(conn, key, fmt)
+            TS = TitleSearch()
+            return TS.batch_search(conn, key, fmt)
 
     def on_ISBN_single(self, ISBN, fmt):
         with self.database as conn:
-            return ISBNSearch.search(conn, ISBN, fmt)
+            IS = ISBNSearch()
+            return IS.search(conn, ISBN, fmt)
 
     def on_ISBN_batch(self, key, fmt):
         with self.database as conn:
-            return ISBNSearch.batch_search(conn, key, fmt)
+            IS = ISBNSearch()
+            return IS.batch_search(conn, key, fmt)
 
     def on_call_num_piece_single(self, piece, fmt):
         with self.database as conn:
-            return CallNumberPieceSearch.search(conn, piece, fmt)
+            CNPS = CallNumberPieceSearch()
+            return CNPS.search(conn, piece, fmt)
 
     def on_call_num_piece_batch(self, key, fmt):
         with self.database as conn:
-            return CallNumberPieceSearch.batch_search(conn, key, fmt)
+            CNPS = CallNumberPieceSearch()
+            return CNPS.batch_search(conn, key, fmt)
 
     def on_call_num_single(self, call_num, fmt):
         with self.database as conn:
-            return CallNumberSearch.search(conn, call_num, fmt)
+            CNS = CallNumberSearch()
+            return CNS.search(conn, call_num, fmt)
 
     def on_call_num_batch(self, key, fmt):
         with self.database as conn:
-            return CallNumberSearch.batch_search(conn, key, fmt)
+            CNS = CallNumberSearch()
+            return CNS.batch_search(conn, key, fmt)
     
     def get_recs(self) -> int:
             return self.database.all_records()

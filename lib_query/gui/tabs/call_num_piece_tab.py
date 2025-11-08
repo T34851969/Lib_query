@@ -10,6 +10,7 @@ class CallNumPieceTab:
         self.app = app
         self.parent = parent
         self._build_ui()
+        self.file_path: str = ''
 
     def _build_ui(self):
         # 标题
@@ -81,18 +82,25 @@ class CallNumPieceTab:
                          padx=10, pady=2, sticky=tk.W)
 
     def click_single(self):
-        value = self.cn_part_entry.get()
+        piece = self.cn_part_entry.get()
         fmt = self.fmt_var.get()
-        result = self.app.ctrl.on_call_num_piece_single(value, fmt)
+        result = self.app.ctrl.on_call_num_piece_single(piece, fmt)
         self.app.append_output('\n'.join(result.get('messages', [])))
 
     def on_load_cn_batch_file(self):
-        self.app.load_file()
+        self.file_path = self.app.load_file()
 
     def click_batch(self):
-        values = self.cn_batch_text.get('1.0', tk.END).strip().splitlines()
+        keys = self.cn_batch_text.get('1.0', tk.END).strip().splitlines()
         fmt = self.batch_fmt.get()
-        result = self.app.ctrl.on_call_num_piece_batch(values, fmt)
+        if keys and any(line.strip() for line in keys):
+            key = keys
+        elif self.file_path:
+            key = self.file_path
+        else:
+            self.app.append_output("请先输入索书号切片或选择文件。")
+            return
+        result = self.app.ctrl.on_call_num_piece_batch(key, fmt)
         self.app.append_output('\n'.join(result.get('messages', [])))
 
 def create(app, parent):

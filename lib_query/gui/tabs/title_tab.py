@@ -10,6 +10,7 @@ class TitleTab:
         self.app = app
         self.parent = parent
         self._build_ui()
+        self.file_path: str = ''
 
     def _build_ui(self):
         # 标题
@@ -88,12 +89,20 @@ class TitleTab:
         self.app.append_output('\n'.join(result.get('messages', [])))
 
     def on_load_title_batch_file(self):
-        self.app.load_file()
+        self.file_path = self.app.load_file()
 
     def on_title_batch_search(self):
         values = self.title_batch_text.get('1.0', tk.END).strip().splitlines()
         fmt = self.batch_fmt.get()
-        result = self.app.ctrl.on_title_batch(values, fmt)
+
+        if values and any(line.strip() for line in values):
+            key = values
+        elif self.file_path:
+            key = self.file_path
+        else:
+            self.app.append_output("请先输入关键词或选择文件。")
+            return
+        result = self.app.ctrl.on_title_batch(key, fmt)
         self.app.append_output('\n'.join(result.get('messages', [])))
 
 
