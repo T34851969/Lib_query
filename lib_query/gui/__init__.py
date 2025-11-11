@@ -1,5 +1,4 @@
 """lib_query.gui 包公共接口
-
 导出：
 - LibraryApp: 主应用类（位于 core_tab.py）
 - apply_style: 样式应用函数（来自 style_config）
@@ -8,11 +7,10 @@
 from typing import Optional
 import tkinter as tk
 
-
 from .core_tab import LibraryApp
 from lib_query.gui.style_config import StyleConfig
 
-def apply_style(root, theme=None):
+def apply_style(root, theme: str='clam'):
   return StyleConfig.apply(root, theme)
 
 __all__ = ["LibraryApp", "apply_style", "create_app"]
