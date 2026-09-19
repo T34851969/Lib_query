@@ -32,15 +32,17 @@ jobs:
           if (Test-Path selfcheck_result.txt) { Get-Content selfcheck_result.txt }
           if ($LASTEXITCODE -ne 0) { Write-Error "自检失败（报告见上方 selfcheck_result.txt）"; exit 1 }
 
-      - name: 失败时回传自检报告
+      - name: 失败时回传自检报告（作为 Release 附件）
         if: failure()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if (Test-Path selfcheck_result.txt) {
-            git config user.name "ci-debug"
-            git config user.email "ci-debug@users.noreply.github.com"
-            git add selfcheck_result.txt
-            git commit -m "CI 自检报告（自动提交）"
-            git push origin HEAD:ci-debug
+            gh release upload v0.2.0 selfcheck_result.txt --clobber --repo ${{ github.repository }}
+            if ($LASTEXITCODE -ne 0) {
+              gh release create v0.2.0 selfcheck_result.txt --title "v0.2.0" --notes "draft assets" --repo ${{ github.repository }}
+            }
           }
 
       - name: 压缩发行包
