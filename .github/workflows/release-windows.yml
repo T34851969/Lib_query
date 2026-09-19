@@ -28,14 +28,15 @@ jobs:
 
       - name: 冒烟自检（SQLite FTS5 + GUI 依赖）
         run: |
+          # pwsh 7 不等待 GUI 子系统 exe，必须用 Start-Process -Wait 否则立即返回
           try {
-            & "dist\Lib_query\Lib_query.exe" --selfcheck
-            "exe_exit_code=$LASTEXITCODE" | Set-Content selfcheck_exit.txt
+            $p = Start-Process -FilePath "dist\Lib_query\Lib_query.exe" -ArgumentList "--selfcheck" -NoNewWindow -Wait -PassThru
+            "exe_exit_code=$($p.ExitCode)" | Set-Content selfcheck_exit.txt
           } catch {
             $_.Exception.Message | Set-Content selfcheck_exit.txt
           }
           if (Test-Path selfcheck_result.txt) { Get-Content selfcheck_result.txt }
-          # --windowed 打包的 exe 退出码不可靠，以报告文件内容为准
+          # 退出码与报告文件双重判定，报告内容为准
           if (-not (Test-Path selfcheck_result.txt)) { Write-Error "自检未生成报告（诊断见 selfcheck_exit.txt）"; exit 1 }
           if (Select-String -Path selfcheck_result.txt -Pattern "FAILED" -Quiet) { Write-Error "自检未通过（见上方报告）"; exit 1 }
 
@@ -75,4 +76,4 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release delete-asset v0.2.0 selfcheck_result.txt --yes --repo ${{ github.repository }}
+        run: gh release delete-asset v0.2.0 selfcheck_result.txt --yes --repo ${{ github.repository }}; gh release delete-asset v0.2.0 selfcheck_exit.txt --yes --repo ${{ github.repository }}
