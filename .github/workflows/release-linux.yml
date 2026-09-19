@@ -31,8 +31,10 @@ jobs:
       - name: PyInstaller 打包
         run: pyinstaller --clean --noconfirm --name Lib_query main.py
 
-      - name: 冒烟自检（SQLite FTS5）
-        run: ./dist/Lib_query/Lib_query --selfcheck
+      - name: 冒烟自检（SQLite FTS5 + GUI 依赖）
+        run: |
+          ./dist/Lib_query/Lib_query --selfcheck
+          cat selfcheck_result.txt
 
       - name: 压缩发行包
         run: tar -czf Lib_query-linux-x64.tar.gz -C dist Lib_query

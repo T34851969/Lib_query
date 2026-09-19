@@ -26,10 +26,22 @@ jobs:
       - name: PyInstaller 打包
         run: pyinstaller --clean --noconfirm --windowed --name Lib_query main.py
 
-      - name: 冒烟自检（SQLite FTS5）
+      - name: 冒烟自检（SQLite FTS5 + GUI 依赖）
         run: |
           dist\Lib_query\Lib_query.exe --selfcheck
-          if ($LASTEXITCODE -ne 0) { Write-Error "FTS5 自检失败"; exit 1 }
+          if (Test-Path selfcheck_result.txt) { Get-Content selfcheck_result.txt }
+          if ($LASTEXITCODE -ne 0) { Write-Error "自检失败（报告见上方 selfcheck_result.txt）"; exit 1 }
+
+      - name: 失败时回传自检报告
+        if: failure()
+        run: |
+          if (Test-Path selfcheck_result.txt) {
+            git config user.name "ci-debug"
+            git config user.email "ci-debug@users.noreply.github.com"
+            git add selfcheck_result.txt
+            git commit -m "CI 自检报告（自动提交）"
+            git push origin HEAD:ci-debug
+          }
 
       - name: 压缩发行包
         run: Compress-Archive -Path dist\Lib_query -DestinationPath Lib_query-windows-x64.zip
