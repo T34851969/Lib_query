@@ -1,6 +1,11 @@
-"""主程序：PySide6 图形界面入口。"""
+"""主程序：PySide6 图形界面入口。
+
+命令行参数：
+    --selfcheck    无界面自检（SQLite 版本与 FTS5 trigram 支持），CI 冒烟用
+"""
 from __future__ import annotations
 
+import sqlite3
 import sys
 
 from PySide6.QtWidgets import QApplication, QMessageBox
@@ -11,6 +16,12 @@ from lib_query.service import LibraryService
 
 
 def main() -> int:
+    if "--selfcheck" in sys.argv:
+        # 不创建 QApplication，无显示环境亦可运行
+        ok = sqlite_supports_trigram()
+        print(f"Lib_query 自检: sqlite={sqlite3.sqlite_version} fts5_trigram={ok}")
+        return 0 if ok else 1
+
     app = QApplication(sys.argv)
     apply_style(app)
 

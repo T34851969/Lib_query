@@ -23,6 +23,17 @@
 | SQLite | ≥ 3.34（需编译 FTS5 与 trigram 分词器；程序启动时自动检查） |
 | 操作系统 | Windows / Linux / macOS（Qt 支持的桌面环境均可） |
 
+## 发行版下载（免装 Python）
+
+打包好的程序发布在 [GitHub Releases](https://github.com/T34851969/Lib_query/releases)，每次推送 `v*` 标签时由 GitHub Actions 自动构建：
+
+| 文件 | 平台 | 使用方式 |
+|---|---|---|
+| `Lib_query-windows-x64.zip` | Windows 10/11 x64 | 解压后双击 `Lib_query.exe`；首次运行可能触发 SmartScreen 提示，选择"仍要运行" |
+| `Lib_query-linux-x64.tar.gz` | Linux x64（glibc ≥ 2.35，Ubuntu 22.04 基准构建） | 解压后运行 `./Lib_query/Lib_query`；缺 `libGL/libEGL` 时用包管理器安装 |
+
+**注意**：数据库（`图书馆详细馆藏.db`）与 `output/` 生成在程序目录旁——请解压到**可写目录**使用，不要放在 `C:\Program Files` 等受限路径下。
+
 ## 快速开始
 
 ```bash
@@ -118,6 +129,7 @@ main.py
 | `lib_query/db/exporter.py` | 流式导出 xlsx / csv（恒定内存、支持取消、行数上限保护） |
 | `scripts/rebuild_fts.py` | 存量库补建 FTS 索引 |
 | `scripts/build_synth_db.py` | 生成合成馆藏库（默认 100 万行），用于性能压测 |
+| `.github/workflows/` | 打包流水线：Windows / Linux 发行版构建与发布 |
 | `tests/` | pytest 测试套件（检索 / 导入 / 导出正确性 + GUI 冒烟） |
 
 ## 开发指南
@@ -136,6 +148,16 @@ QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -v
 ```bash
 .venv/bin/python scripts/build_synth_db.py --rows 1000000 --output /tmp/perf.db
 ```
+
+**本地打包**（与 CI 同流程）：
+
+```bash
+.venv/bin/pip install -e ".[build]"
+.venv/bin/pyinstaller --clean --noconfirm --windowed --name Lib_query main.py   # Linux 去掉 --windowed
+./dist/Lib_query/Lib_query --selfcheck    # 验证捆绑的 SQLite 支持 FTS5
+```
+
+**持续集成**：`.github/workflows/` 下有两个打包工作流（`release-windows.yml` / `release-linux.yml`），推送 `v*` 标签时自动构建并发布到 Releases；也可在 Actions 页面手动触发（workflow_dispatch），产物在构建工件里下载。两个工作流均先跑 `--selfcheck` 冒烟（校验捆绑 Python 的 SQLite 带 FTS5）再发布。
 
 **开发红线**：
 

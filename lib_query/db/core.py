@@ -1,14 +1,21 @@
 """数据库连接、路径与能力检查。
 
-所有路径以项目根（main.py 所在目录）为基准，不依赖进程工作目录。
+所有路径以项目根为基准，不依赖进程工作目录。
+源码运行时项目根 = main.py 所在目录；PyInstaller 打包后 = 可执行文件所在目录
+（数据与输出跟随 exe，onedir 布局下 __file__ 在 _internal 内，不可用于定位）。
 """
 from __future__ import annotations
 
 import sqlite3
+import sys
 from pathlib import Path
 
-# core.py 位于 <项目根>/lib_query/db/
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if getattr(sys, "frozen", False):
+    PROJECT_ROOT = Path(sys.executable).resolve().parent
+else:
+    # core.py 位于 <项目根>/lib_query/db/
+    PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
 DB_PATH = PROJECT_ROOT / "图书馆详细馆藏.db"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
