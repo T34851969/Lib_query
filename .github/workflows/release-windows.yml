@@ -28,13 +28,16 @@ jobs:
 
       - name: 冒烟自检（SQLite FTS5 + GUI 依赖）
         run: |
-          dist\Lib_query\Lib_query.exe --selfcheck
-          $code = $LASTEXITCODE
-          Get-Content selfcheck_result.txt
+          try {
+            & "dist\Lib_query\Lib_query.exe" --selfcheck
+            "exe_exit_code=$LASTEXITCODE" | Set-Content selfcheck_exit.txt
+          } catch {
+            $_.Exception.Message | Set-Content selfcheck_exit.txt
+          }
+          if (Test-Path selfcheck_result.txt) { Get-Content selfcheck_result.txt }
           # --windowed 打包的 exe 退出码不可靠，以报告文件内容为准
-          if (-not (Test-Path selfcheck_result.txt)) { Write-Error "自检未生成报告"; exit 1 }
+          if (-not (Test-Path selfcheck_result.txt)) { Write-Error "自检未生成报告（诊断见 selfcheck_exit.txt）"; exit 1 }
           if (Select-String -Path selfcheck_result.txt -Pattern "FAILED" -Quiet) { Write-Error "自检未通过（见上方报告）"; exit 1 }
-          if ($code -ne 0) { Write-Warning "exe 退出码 $code 非零，但自检报告通过，忽略" }
 
       - name: 失败时回传自检报告（作为 Release 附件）
         if: failure()
@@ -42,11 +45,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if (Test-Path selfcheck_result.txt) {
-            gh release upload v0.2.0 selfcheck_result.txt --clobber --repo ${{ github.repository }}
-            if ($LASTEXITCODE -ne 0) {
-              gh release create v0.2.0 selfcheck_result.txt --title "v0.2.0" --notes "draft assets" --repo ${{ github.repository }}
-            }
+          if (-not (Test-Path selfcheck_exit.txt)) { "no exit file" | Set-Content selfcheck_exit.txt }
+          $files = @("selfcheck_exit.txt")
+          if (Test-Path selfcheck_result.txt) { $files += "selfcheck_result.txt" }
+          else { "exe 未生成自检报告（未运行或启动即崩溃）" | Set-Content selfcheck_marker.txt; $files += "selfcheck_marker.txt" }
+          gh release upload v0.2.0 $files --clobber --repo ${{ github.repository }}
+          if ($LASTEXITCODE -ne 0) {
+            gh release create v0.2.0 $files --title "v0.2.0" --notes "assets" --repo ${{ github.repository }}
           }
 
       - name: 压缩发行包

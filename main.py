@@ -22,6 +22,12 @@ def _selfcheck() -> int:
     lines: list[str] = []
     ok = True
 
+    # 先落"已启动"标记：与最终报告区分"exe 未运行"与"运行到一半崩溃"
+    try:
+        Path("selfcheck_result.txt").write_text("selfcheck started\n", encoding="utf-8")
+    except Exception:
+        pass
+
     try:
         from lib_query.db.core import sqlite_supports_trigram
 
