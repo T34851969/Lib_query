@@ -35,6 +35,10 @@ jobs:
         run: |
           ./dist/Lib_query/Lib_query --selfcheck
           cat selfcheck_result.txt
+          if grep -q "FAILED" selfcheck_result.txt; then
+            echo "自检未通过（见上方报告）"
+            exit 1
+          fi
 
       - name: 压缩发行包
         run: tar -czf Lib_query-linux-x64.tar.gz -C dist Lib_query
