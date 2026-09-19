@@ -226,6 +226,3 @@ output/
 *.csv
 .github/
 
-# test files
-*test*
-

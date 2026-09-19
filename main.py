@@ -1,16 +1,34 @@
-"""主程序"""
-import tkinter as tk
-from lib_query.gui import create_app
-from lib_query.ctrl import CentreCtrl
-from lib_query.db.core import LibraryDatabase
+"""主程序：PySide6 图形界面入口。"""
+from __future__ import annotations
+
+import sys
+
+from PySide6.QtWidgets import QApplication, QMessageBox
+
+from lib_query.db.core import sqlite_supports_trigram
+from lib_query.gui import MainWindow, apply_style
+from lib_query.service import LibraryService
+
+
+def main() -> int:
+    app = QApplication(sys.argv)
+    apply_style(app)
+
+    if not sqlite_supports_trigram():
+        QMessageBox.critical(
+            None,
+            "环境不满足",
+            "当前 Python 的 SQLite 缺少 FTS5/trigram 支持"
+            f"（检测到 {__import__('sqlite3').sqlite_version}，需 ≥ 3.34）。"
+            "题名检索索引无法使用，程序退出。",
+        )
+        return 1
+
+    service = LibraryService()
+    window = MainWindow(service)
+    window.show()
+    return app.exec()
+
 
 if __name__ == "__main__":
-
-    
-    db = LibraryDatabase()
-    ctrl = CentreCtrl(db)
-    
-    root = tk.Tk()
-    app = create_app(root, ctrl=ctrl, load_tabs=True, theme='clam')
-
-    root.mainloop()
+    raise SystemExit(main())

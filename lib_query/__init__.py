@@ -1,4 +1,1 @@
-from lib_query.ctrl import CentreCtrl
-from lib_query.gui.style_config import StyleConfig
-
-__all__ = ['CentreCtrl', 'StyleConfig']
+"""lib_query：图书检索工具（PySide6 界面 + SQLite/FTS5 数据层）。"""
