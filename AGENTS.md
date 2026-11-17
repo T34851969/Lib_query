@@ -22,8 +22,9 @@
 - **Runner**：ws2025 第三 self-hosted runner（仅注册到本仓），目录 `C:\Program Files\actions-runner-libq`，
   服务 `actions.runner.T34851969-Lib_query.LCARS-WIN-SERVE`（SYSTEM、延迟自启），label **`libq`**
   ——与 ISBN_query 仓 runner（actions-runner-isbnq）和 Proj 仓 runner（actions-runner）互不相干，勿动后两者
-- `build.yml`：push main → 单测 30 → publish → `--selftest` → exe 工件 → **滚动预发行 `nightly`**
-  （zip 同名 clobber 刷新，下载链接恒定；用户裁定：每次 Actions 跑完必须出发行包）
+- `build.yml`：push main → 单测 30 → publish → `--selftest` → exe 工件 → **自动转正发行包**
+  （读最新稳定 tag，patch+1，标记 Latest，--generate-notes；用户裁定：每次 Actions 跑完必须出
+  发行包，且**不打预备发行标签，直接转正**）
 - `release.yml`：`v*` 标签 → 同上全流程 → 自检报告文件判定（`selftest_result.txt`，WinExe 无控制台）→
   `LibQuery-windows-x64.zip` 上正式 Release；调试附件失败时回传 Release、成功后清理
 

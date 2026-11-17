@@ -133,10 +133,10 @@ dotnet run -c Release --project bench\LibBench -- --rows 1000000 --output D:\per
 ```
 
 **持续集成 / 部署**：CI 在 self-hosted runner（label `libq`，ws2025 VM 第三 runner，服务
-`actions.runner.T34851969-Lib_query.LCARS-WIN-SERVE`）上运行，**每次全绿构建自动出发行包**：
+`actions.runner.T34851969-Lib_query.LCARS-WIN-SERVE`）上运行，**每次全绿构建自动转正发行包**（用户裁定）：
 - `build.yml`：push 到 main → 30 项单测 → 单文件发布 → `--selftest` 冒烟 → exe 工件（保留 14 天）
-  → **滚动预发行 [nightly](https://github.com/T34851969/Lib_query/releases/tag/nightly)**（`LibQuery-windows-x64.zip` 同名刷新，下载链接恒定，Notes 记录 commit 与构建记录）
-- `release.yml`：推送 `v*` 标签（或手动 dispatch）→ 同上全流程 → 自检报告文件判定通过后压缩上传**正式 Release**
+  → **直接转正为正式 Release**：读取最新稳定 tag，patch 自动 +1（如 v0.3.0 → v0.3.1），标记 Latest，自动生成 Release Notes——不打预备发行标签
+- `release.yml`：推送 `v*` 标签（或手动 dispatch）→ 同上全流程 → 自检报告文件判定通过后上传**正式 Release**（手工发任意版本用）
 
 **开发红线**：
 

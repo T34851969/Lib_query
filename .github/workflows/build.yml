@@ -40,22 +40,25 @@ jobs:
           path: dist/LibQuery.exe
           retention-days: 14
 
-      # 每次全绿构建刷新滚动预发行 nightly：资产同名覆盖，下载链接恒定；
-      # 正式 Release（v* 标签）由 release.yml 负责，不互相覆盖。
-      - name: 上传开发发行包（nightly 预发行）
+      # 用户裁定：每次全绿构建直接转正为正式版（不打预备发行标签）——
+      # 读取最新稳定 tag，patch 自动 +1，标记 Latest；手工 v* 标签（release.yml）仍可发任意版本。
+      - name: 自动转正发行包（patch +1，Latest）
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
-          gh release view nightly --repo $env:GITHUB_REPOSITORY > $null 2>&1
+          $tags = gh release list --repo $env:GITHUB_REPOSITORY --limit 50 |
+            ForEach-Object { ($_ -split "`t")[2] } |
+            Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } |
+            ForEach-Object { [version]$_.Substring(1) }
+          $latest = $tags | Sort-Object | Select-Object -Last 1
+          if ($null -eq $latest) { $latest = [version]'0.2.0' }
+          $next = "v{0}.{1}.{2}" -f $latest.Major, $latest.Minor, ($latest.Build + 1)
+          gh release create $next LibQuery-windows-x64.zip --latest --generate-notes `
+            --target $env:GITHUB_SHA --repo $env:GITHUB_REPOSITORY --title $next
           if ($LASTEXITCODE -ne 0) {
-            gh release create nightly LibQuery-windows-x64.zip --prerelease `
-              --target $env:GITHUB_SHA --repo $env:GITHUB_REPOSITORY `
-              --title "开发发行包（nightly）" --notes "最新 main 分支全绿构建。"
-          } else {
-            gh release upload nightly LibQuery-windows-x64.zip --clobber --repo $env:GITHUB_REPOSITORY
+            Write-Host "::warning::release $next 创建失败（可能并发已存在），本轮跳过"
+            exit 0
           }
-          $runUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
-          gh release edit nightly --prerelease --repo $env:GITHUB_REPOSITORY `
-            --title "开发发行包（nightly）" `
-            --notes "最新 main 分支全绿构建：commit $env:GITHUB_SHA`n构建记录：$runUrl`n稳定版由 v* 标签触发（release.yml）。"
+          Write-Host "released $next from $($env:GITHUB_SHA)"
