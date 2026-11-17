@@ -1,51 +1,43 @@
-# Lib_query
+# Lib_query（图书馆馆藏条目检索系统，C# 重构版）
 
-基于 **PySide6（Qt 6）** 与 **SQLite FTS5** 的馆藏图书检索工具。支持题名、索书号、索书号切片、ISBN 四种检索方式，单次或批量执行，结果导出为 .xlsx / .csv。
-
-为图书馆采编/典藏场景设计：百万行级馆藏库，检索毫秒级响应，批量任务后台执行、界面不卡顿、随时可取消。
-
----
+基于 **.NET 10 + WinForms + SQLite FTS5** 的馆藏图书检索工具，Windows 专用。
+由 PySide6（Qt 6）版本（本仓 v0.2.0 及更早，见 [Releases](https://github.com/T34851969/Lib_query/releases) 与历史标签）重构而来：
+发布形态改为**自包含单文件 exe**（免安装、无 Python 依赖），数据库结构与检索行为与 Python 版完全兼容。
 
 ## 功能特性
 
 - **四种检索方式**：题名模糊检索（FTS 索引）、索书号精确检索、索书号切片检索、ISBN 精确检索
 - **单次 / 批量**：批量支持文本框逐行输入或从 TXT 文件导入，每个关键词独立输出一个结果文件
 - **后台执行**：所有检索与导入均在后台线程运行，界面始终响应；批量任务有进度条，可随时取消
-- **流式导出**：结果逐行写入 .xlsx（`constant_memory` 模式）或 .csv，内存占用恒定，不随结果集大小膨胀
+- **流式导出**：结果逐行写入 .xlsx 或 .csv，内存占用恒定，不随结果集大小膨胀
 - **一键建库**：首次启动引导选择馆藏 Excel，自动建表、建索引、建 FTS5 题名索引
-- **旧库兼容**：老版本生成的数据库可直接使用，一条命令补建 FTS 索引（无需重导 Excel）
+- **旧库兼容**：Python 版生成的数据库（含老版本无 FTS 的库）可直接使用；`--rebuild-fts` 一键补建索引（无需重导 Excel）
 
 ## 环境要求
 
 | 项目 | 要求 |
 |---|---|
-| Python | ≥ 3.10 |
-| SQLite | ≥ 3.34（需编译 FTS5 与 trigram 分词器；程序启动时自动检查） |
-| 操作系统 | Windows / Linux / macOS（Qt 支持的桌面环境均可） |
+| 操作系统 | Windows 10/11 x64 |
+| 安装 | 免安装（自包含单文件；首次启动会把内嵌原生库解压到 `%TEMP%\.net`，属预期行为） |
 
-## 发行版下载（免装 Python）
+## 发行版下载
 
-打包好的程序发布在 [GitHub Releases](https://github.com/T34851969/Lib_query/releases)，每次推送 `v*` 标签时由 GitHub Actions 自动构建：
+打包好的程序发布在 [GitHub Releases](https://github.com/T34851969/Lib_query/releases)，每次推送 `v*` 标签时由
+**self-hosted runner（ws2025 Windows VM，label `libq`）** 自动构建：
 
-| 文件 | 平台 | 使用方式 |
-|---|---|---|
-| `Lib_query-windows-x64.zip` | Windows 10/11 x64 | 解压后双击 `Lib_query.exe`；首次运行可能触发 SmartScreen 提示，选择"仍要运行" |
-| `Lib_query-linux-x64.tar.gz` | Linux x64（glibc ≥ 2.35，Ubuntu 22.04 基准构建） | 解压后运行 `./Lib_query/Lib_query`；缺 `libGL/libEGL` 时用包管理器安装 |
+| 文件 | 说明 |
+|---|---|
+| `LibQuery-windows-x64.zip` | 解压后双击 `LibQuery.exe`；首次运行可能触发 SmartScreen 提示，选择"仍要运行" |
 
 **注意**：数据库（`图书馆详细馆藏.db`）与 `output/` 生成在程序目录旁——请解压到**可写目录**使用，不要放在 `C:\Program Files` 等受限路径下。
 
+旧 Python 版发行版（`Lib_query-windows-x64.zip` / `Lib_query-linux-x64.tar.gz`，v0.2.0 及更早）仍可从 Releases 下载；Linux 版自 v0.3.0 起不再提供（本重构为 Windows 专用）。
+
 ## 快速开始
 
-```bash
-# 1. 安装依赖
-python -m venv .venv
-.venv/bin/pip install -r requirements.txt      # Windows: .venv\Scripts\pip install -r requirements.txt
-
-# 2. 启动
-.venv/bin/python main.py
-```
-
-首次启动若未找到 `图书馆详细馆藏.db`，程序会引导选择馆藏 Excel 文件完成建库。
+1. 双击 `LibQuery.exe`
+2. 首次启动若未找到 `图书馆详细馆藏.db`，程序会引导选择馆藏 Excel 文件完成建库
+3. CLI 附加模式：`LibQuery.exe --selftest`（无界面自检）；`LibQuery.exe --rebuild-fts [--force] [数据库路径]`（补建 FTS 索引）
 
 **馆藏 Excel 格式约定**（沿用 v0.1 的列布局）：
 
@@ -53,18 +45,6 @@ python -m venv .venv
 - 第 1~4 列保留原列名（`题名`、`索书号`、`标准号` 等，程序按列名建索引）；
 - 第 5~11 列按位置重命名为 `level_1` ~ `level_7`（索书号分级，供切片检索使用）；
 - 所有单元格按文本入库；Excel 中以数值格式存储的 ISBN 会自动去除小数尾巴（如 `9787030123456.0` → `9787030123456`）。
-
-## 老版本数据库升级
-
-v0.1 生成的 `.db` 文件可以直接使用。缺 FTS 索引时题名检索自动回退全表扫描（功能不受影响，仅速度慢）；运行一次以下脚本即可补建：
-
-```bash
-.venv/bin/python scripts/rebuild_fts.py                # 默认路径
-.venv/bin/python scripts/rebuild_fts.py /path/to/库.db  # 指定路径
-.venv/bin/python scripts/rebuild_fts.py --force /path/to/库.db  # 已有索引时强制重建
-```
-
-100 万行库首次构建约需 1~2 分钟，构建完成前程序仍可正常使用其他检索类型。
 
 ## 检索行为说明
 
@@ -82,88 +62,88 @@ v0.1 生成的 `.db` 文件可以直接使用。缺 FTS 索引时题名检索自
 - .xlsx 单表超过 1,048,575 行自动截断并在日志提示；.csv 无上限
 - 编码：csv 使用 `utf-8-sig`（Excel 直接打开不乱码）
 
-## 性能基准
+## 与 Python 版（v0.2.0）的兼容性
 
-以下为 `scripts/build_synth_db.py` 生成的 **100 万行合成库**实测数据（Python 3.13 / SQLite 3.46）：
-
-| 场景 | v0.1（pandas + LIKE 全表扫描） | v0.2（FTS + 流式导出） |
-|---|---|---|
-| 题名检索（低频词，命中 200 行） | ~206 ms 仅查询，另加 pandas 全量转换 | **0.7 ms** 含导出 23 ms |
-| 批量 100 个 ISBN + 逐词导出 xlsx | 逐条查询 + 每词 pandas 转换 | **306 ms** 全程 |
-| Excel 导入建库（20 万行实测外推） | — | 100 万行约 30~40 s，峰值内存 ~1.5 GB |
-| 导出内存占用 | 随结果集线性膨胀 | 恒定（流式写入） |
-
-> v0.1 的题名检索在主线程执行同样的全表扫描，期间界面完全冻结——这是重构要解决的核心问题。
+- **数据库完全兼容**：表结构（`books` + 全部索引名）、FTS5 虚表（`books_fts`，`content='books'` 外部内容 + 三触发器）、切片定位规则逐条对齐；Python 版生成的 `.db` 直接放到 exe 目录即可使用
+- **差异点**：
+  - Excel 导入改为流式逐块写库（内存恒定），进度按块回报"已写入 N 行"（Python 版整表物化后带总数回报）
+  - 存量库补建索引由 `LibQuery.exe --rebuild-fts` 取代 `scripts/rebuild_fts.py`
+  - Linux 发行版停止（Windows 专用）
 
 ## 架构
 
 ```
-main.py
-  └─ MainWindow ──────────────────── 主线程：窗口 / 日志面板 / 状态栏
-       ├─ SearchTab × 4（SearchSpec 声明式配置，四个检索页共用一套模板）
-       │    └─ TaskRunner（gui/worker.py）
-       │         └─ QThread 后台线程
-       │              └─ LibraryService（service.py，连接生命周期）
-       │                   ├─ db/search.py    参数化检索（题名/索书号/切片/ISBN）
-       │                   └─ db/exporter.py  流式导出 xlsx / csv
-       └─ 状态更新仅经 Qt 信号（progress / message / finished / failed）回主线程
+Program.cs ── --selftest / --rebuild-fts CLI 分支
+  └─ MainForm ────────────────────── UI 线程：标签页容器 / 日志面板 / 状态栏
+       ├─ SearchTab × 4（SearchSpecs 声明式配置，四个检索页共用一套模板）
+       │    └─ TaskRunner（Task.Run + IProgress + CancellationToken）
+       │         └─ LibraryService（连接生命周期，每次调用自建连接）
+       │              ├─ Searcher.cs     参数化检索（题名/索书号/切片/ISBN）
+       │              └─ Exporter.cs     流式导出 xlsx / csv（MiniExcel DataReader 通道）
+       └─ 状态更新经 Progress<T>/BeginInvoke 封送回 UI 线程
 ```
 
-- **线程模型**：每页一个 TaskRunner，任务运行期间禁用该页按钮、启用取消；取消经 `threading.Event` 传递，导出循环每 5000 行响应一次
+- **线程模型**：每页一个 TaskRunner，任务运行期间禁用该页按钮、启用取消；取消经 `CancellationToken` 传递，导出循环每 5000 行响应一次
 - **FTS5 索引**：外部内容表（`content='books'`）+ 三触发器同步，导入时一次性 `rebuild` 构建
+- **xlsx 流式写出**：MiniExcel 的 DataReader 通道（表头取自游标列名，空结果也有表头行）；`CancellableReader` 包装游标实现预览捕获、行数截断与取消检查
 
 ## 项目结构
 
 | 路径 | 说明 |
 |---|---|
-| `main.py` | 程序入口（QApplication + MainWindow，启动时检查 FTS5 能力） |
-| `lib_query/service.py` | 检索编排层：连接生命周期、单次/批量入口（线程安全） |
-| `lib_query/gui/worker.py` | 后台任务框架：QThread + Worker（进度 / 消息 / 结果 / 失败 / 取消） |
-| `lib_query/gui/main_window.py` | 主窗口：检索页容器、日志面板、状态栏、首启导入引导 |
-| `lib_query/gui/search_tab.py` | 检索页基类：单次 + 批量 UI 与任务编排 |
-| `lib_query/gui/tabs.py` | 四个检索页的声明式配置（`SEARCH_SPECS`） |
-| `lib_query/gui/style.py` | 全局 QSS 样式 |
-| `lib_query/db/core.py` | 连接管理、项目根路径解析、FTS5 能力检查 |
-| `lib_query/db/importer.py` | Excel 导入建库（python-calamine）+ 索引 + FTS5 |
-| `lib_query/db/search.py` | 参数化检索实现与批量编排 |
-| `lib_query/db/exporter.py` | 流式导出 xlsx / csv（恒定内存、支持取消、行数上限保护） |
-| `scripts/rebuild_fts.py` | 存量库补建 FTS 索引 |
-| `scripts/build_synth_db.py` | 生成合成馆藏库（默认 100 万行），用于性能压测 |
-| `.github/workflows/` | 打包流水线：Windows / Linux 发行版构建与发布 |
-| `tests/` | pytest 测试套件（检索 / 导入 / 导出正确性 + GUI 冒烟） |
+| `src/LibQuery/Program.cs` | 入口（`--selftest` / `--rebuild-fts` CLI 分支 + WinForms 启动） |
+| `src/LibQuery/MainForm.cs` | 主窗口：检索页容器、日志面板、状态栏、首启导入引导 |
+| `src/LibQuery/SearchTab.cs` | 检索页：单次 + 批量 UI 与任务编排 |
+| `src/LibQuery/TaskRunner.cs` | 后台任务框架（Task.Run + Progress 封送 + busy 锁定 + 取消） |
+| `src/LibQuery.Core/LibraryService.cs` | 检索编排层：连接生命周期、单次/批量入口（线程安全）+ `RebuildFts` |
+| `src/LibQuery.Core/Searcher.cs` | 参数化检索实现与批量编排（四种模式） |
+| `src/LibQuery.Core/SearchSpecs.cs` | 四个检索页的声明式配置 |
+| `src/LibQuery.Core/Exporter.cs` | 流式导出 xlsx/csv（恒定内存、取消、行数上限保护）+ `CancellableReader` |
+| `src/LibQuery.Core/Importer.cs` | Excel 导入建库（ExcelDataReader 流式）+ 索引 + FTS5 |
+| `src/LibQuery.Core/Db.cs` | 连接管理、路径、FTS5 trigram 能力探测 |
+| `src/LibQuery.Core/SelfTest.cs` | `--selftest` 无 UI 冒烟（报告写 `selftest_result.txt`，CI 用） |
+| `src/LibQuery.Core/SynthDb.cs` | 合成馆藏库生成器（tests/bench/自检共用） |
+| `bench/LibBench/` | 合成大库压测（默认 100 万行） |
+| `tests/LibQuery.Core.Tests/` | xUnit 测试套件（检索/导入/导出正确性 + 取消/兼容路径） |
+| `scripts/ws2025-build.cmd` | ws2025 构建入口（test/publish/selftest/bench/clean） |
+| `scripts/x99-build.sh` | x99 Linux 构建/测试入口（交叉编译发布） |
+| `.github/workflows/build.yml` | CI：push → 全量测试 + 发布 + 自检 + exe 工件 |
+| `.github/workflows/release.yml` | CD：`v*` 标签 → 测试 + 发布 + 自检 → Release |
 
 ## 开发指南
 
-**新增检索类型**：在 `lib_query/gui/tabs.py` 的 `SEARCH_SPECS` 中追加一条 `SearchSpec`（指定匹配模式与输出目录）；如需新的匹配语义，在 `lib_query/db/search.py` 的 `build_query()` 增加一个 mode 分支。无需新建文件、无需改动界面代码。
+**源码真源**：ws2025 Windows VM `C:\Users\Administrator\Desktop\Lib_query`（维护机经 `ssh ws2025` 直连）。
+SDK 为 Windows 版 .NET 10（`C:\Users\Administrator\Desktop\dotnet`，已进机器 PATH）；x99（Arch）经 home-manager
+`dotnet-sdk_10` 可跑 Linux 侧单元测试与交叉编译发布（`scripts/x99-build.sh`）。
 
-**运行测试**：
+**新增检索类型**：在 `src/LibQuery.Core/SearchSpecs.cs` 的 `All` 数组中追加一条 `SearchSpec`（指定匹配模式与输出目录）；如需新的匹配语义，在 `Searcher.BuildQuery` 增加一个 mode 分支。无需新建文件、无需改动界面代码。
 
-```bash
-.venv/bin/pip install pytest
-QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -v
+**运行测试 / 构建**（ws2025）：
+
+```bat
+scripts\ws2025-build.cmd test
+scripts\ws2025-build.cmd publish
+scripts\ws2025-build.cmd selftest
 ```
 
 **性能压测**：
 
-```bash
-.venv/bin/python scripts/build_synth_db.py --rows 1000000 --output /tmp/perf.db
+```bat
+dotnet run -c Release --project bench\LibBench -- --rows 1000000 --output D:\perf.db
 ```
 
-**本地打包**（与 CI 同流程）：
-
-```bash
-.venv/bin/pip install -e ".[build]"
-.venv/bin/pyinstaller --clean --noconfirm --windowed --name Lib_query main.py   # Linux 去掉 --windowed
-./dist/Lib_query/Lib_query --selfcheck    # 验证捆绑的 SQLite 支持 FTS5
-```
-
-**持续集成**：`.github/workflows/` 下有两个打包工作流（`release-windows.yml` / `release-linux.yml`），推送 `v*` 标签时自动构建并发布到 Releases；也可在 Actions 页面手动触发（workflow_dispatch），产物在构建工件里下载。两个工作流均先跑 `--selfcheck` 冒烟（校验捆绑 Python 的 SQLite 带 FTS5）再发布。
+**持续集成 / 部署**：CI 在 self-hosted runner（label `libq`，ws2025 VM 第三 runner，服务
+`actions.runner.T34851969-Lib_query.LCARS-WIN-SERVE`）上运行：
+- `build.yml`：push 到 main → 30 项单测 → 单文件发布 → `--selftest` 冒烟 → exe 工件（保留 14 天）
+- `release.yml`：推送 `v*` 标签（或手动 dispatch）→ 同上全流程 → 自检报告文件判定通过后压缩上传 Release
 
 **开发红线**：
 
-- 任何耗时操作（检索 / 导入 / 导出）禁止在主线程执行，必须经 `gui/worker.py` 的 `TaskRunner`
-- 界面更新只能来自 Qt 信号回调，后台线程不得直接触碰任何 QWidget
-- 数据库与输出路径以项目根为基准（`db/core.py`），不要引入对进程工作目录的依赖
+- 任何耗时操作（检索 / 导入 / 导出）禁止在 UI 线程执行，必须经 `TaskRunner`
+- 界面更新只能来自 Progress/BeginInvoke 回调，后台线程不得直接触碰任何控件
+- 数据库与输出路径以 exe 所在目录为基准（`AppPaths`），不要引入对进程工作目录的依赖
+- **Schema 兼容红线**：不得更改 `books` 列布局约定、`books_fts` 外部内容结构与索引命名——这是与 Python 版旧库互通的根基
+- CI 关键路径一律官方上游（nuget.org），不得引入第三方镜像源（镜像政治脆弱面，见 x99 ai-ops ADR-0031）
 
 ## 常见问题
 
@@ -171,10 +151,10 @@ QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -v
 trigram 分词器最小索引单元是 3 个字符，短关键词自动回退 LIKE 全表扫描。这是索引机制的固有限制，百万行库约 200 ms，属正常现象。
 
 **Q：导入时提示某列变成 level_N 了？**
-列布局约定第 5~11 列按位置重命名为 `level_1`~`level_7`（供切片检索）。若你的 Excel 列序有变，请调整表头使其匹配约定，或修改 `db/importer.py` 中的重命名规则。
+列布局约定第 5~11 列按位置重命名为 `level_1`~`level_7`（供切片检索）。若你的 Excel 列序有变，请调整表头使其匹配约定，或修改 `Importer.cs` 中的重命名规则。
 
 **Q：启动时提示"SQLite 缺少 FTS5/trigram 支持"？**
-系统的 Python SQLite 编译时未启用 FTS5。Linux 发行版自带的 SQLite 通常已启用；若为自编译版本，需加 `--enable-fts5` 重新编译。
+C# 版内嵌 SQLite（Microsoft.Data.Sqlite / e_sqlite3 3.53.x）自带 FTS5 与 trigram，正常不会出现该提示；若自检报此错请附上 `--selftest` 的 `selftest_result.txt`。
 
 **Q：结果文件在哪里？**
-`output/<检索类型>/` 目录下，以关键词命名。该目录及数据库文件均固定在项目根目录，与启动时的工作目录无关。
+`output/<检索类型>/` 目录下，以关键词命名。该目录及数据库文件均固定在 exe 所在目录，与启动时的工作目录无关。

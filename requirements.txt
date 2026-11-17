@@ -1,6 +1,0 @@
-PySide6
-xlsxwriter
-python-calamine
-# PySide6: 图形界面（Qt 6）
-# xlsxwriter: 检索结果流式导出为 .xlsx（constant_memory 模式）
-# python-calamine: 读取馆藏 Excel（导入建库用）
