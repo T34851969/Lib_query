@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-selftest:
@@ -29,9 +29,33 @@ jobs:
         shell: cmd
         run: scripts\ws2025-build.cmd selftest
 
+      - name: 压缩发行包
+        shell: pwsh
+        run: Compress-Archive -Path dist\LibQuery.exe -DestinationPath LibQuery-windows-x64.zip
+
       - name: Upload exe artifact
         uses: actions/upload-artifact@v4
         with:
           name: LibQuery-exe
           path: dist/LibQuery.exe
           retention-days: 14
+
+      # 每次全绿构建刷新滚动预发行 nightly：资产同名覆盖，下载链接恒定；
+      # 正式 Release（v* 标签）由 release.yml 负责，不互相覆盖。
+      - name: 上传开发发行包（nightly 预发行）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          gh release view nightly --repo $env:GITHUB_REPOSITORY > $null 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            gh release create nightly LibQuery-windows-x64.zip --prerelease `
+              --target $env:GITHUB_SHA --repo $env:GITHUB_REPOSITORY `
+              --title "开发发行包（nightly）" --notes "最新 main 分支全绿构建。"
+          } else {
+            gh release upload nightly LibQuery-windows-x64.zip --clobber --repo $env:GITHUB_REPOSITORY
+          }
+          $runUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+          gh release edit nightly --prerelease --repo $env:GITHUB_REPOSITORY `
+            --title "开发发行包（nightly）" `
+            --notes "最新 main 分支全绿构建：commit $env:GITHUB_SHA`n构建记录：$runUrl`n稳定版由 v* 标签触发（release.yml）。"
